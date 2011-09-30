@@ -62,6 +62,8 @@ var dnd = new DnDFileController('body', function(files) {
 
 var filer = new Filer();
 
+var entries = []; // Cache of current working directory's entries.
+
 // =============================================================================
 var filePreview = document.querySelector('#file-info');
 var filesContainer = document.querySelector('#files');
@@ -130,14 +132,17 @@ function constructEntryHTML(entry, i) {
 }
 
 function addEntryToList(entry, opt_idx) {
-  var idx = (opt_idx === undefined) ? filer.entries.length - 1 : opt_idx;
+  var idx = (opt_idx === undefined) ? entries.length - 1 : opt_idx;
 
   var li = document.createElement('li');
   li.innerHTML = constructEntryHTML(entry, idx);
   fileList.appendChild(li);
 }
 
-function renderEntries(entries) {
+function renderEntries(resultEntries) {
+  entries = resultEntries; // Cache the result set.
+
+
   // Clear out existing entries and reset HTML.
   fileList.innerHTML = '';
 
@@ -145,14 +150,14 @@ function renderEntries(entries) {
   li.innerHTML = '<a href="javascript:" onclick="cd(-1)" class="parentDir"><img src="images/icons/folder.png" class="folder"> [ parent directory ]</a>'
   fileList.appendChild(li);
 
-  if (!entries.length) {
+  if (!resultEntries.length) {
     var li = document.createElement('li');
     li.innerHTML = 'No files.'
     fileList.appendChild(li);
     return;
   }
 
-  entries.forEach(function(entry, i) {
+  resultEntries.forEach(function(entry, i) {
     /*entry.getMetadata(function(e) {
     console.log(e)
     }, onError);*/
@@ -188,14 +193,14 @@ function cd(i) {
   if (i == -1) {
     var path = '..';
   } else {
-    var path = filer.entries[i].fullPath;
+    var path = entries[i].fullPath;
   }
 
   filer.ls(path, renderEntries, onError);
 }
 
 function openFile(i) {
-  filer.open(filer.entries[i].name);
+  filer.open(entries[i].name);
 }
 
 function newFile(name) {
@@ -218,15 +223,15 @@ function writeFile(file) {
 }
 
 function rename(el, i) {
-  filer.rename(filer.entries[i], el.textContent, function(entry) {
-    logger.log('<p>' + filer.entries[i].name + ' renamed to ' + entry.name + '</p>');
-    filer.entries[i] = entry;
+  filer.rename(entries[i], el.textContent, function(entry) {
+    logger.log('<p>' + entries[i].name + ' renamed to ' + entry.name + '</p>');
+    entries[i] = entry;
   });
   toggleContentEditable(el);
 }
 
 function remove(link, i) {
-  var entry = filer.entries[i];
+  var entry = entries[i];
 
   if (!confirm('Delete ' + entry.name + '?')) {
     return;
@@ -243,15 +248,15 @@ function remove(link, i) {
 }
 
 function copy(el, i) {
-  filer.cp(filer.entries[i], el.textContent, function(entry) {
-    logger.log('<p>' + filer.entries[i].name + ' renamed to ' + entry.name + '</p>');
-    filer.entries[i] = entry;
+  filer.cp(entries[i], el.textContent, function(entry) {
+    logger.log('<p>' + entries[i].name + ' renamed to ' + entry.name + '</p>');
+    entries[i] = entry;
   });
   toggleContentEditable(el);
 }
 
 function readFile(i) {
-  var entry = filer.entries[i];
+  var entry = entries[i];
 
   try {
     filer.open(entry.name, function(file) {
