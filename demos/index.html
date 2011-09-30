@@ -1,0 +1,299 @@
+<!DOCTYPE html>
+<!--
+Copyright 2011 - Eric Bidelman
+
+Licensed under the Apache License, Version 2.0 (the "License");
+you may not use this file except in compliance with the License.
+You may obtain a copy of the License at
+
+     http://www.apache.org/licenses/LICENSE-2.0
+
+Unless required by applicable law or agreed to in writing, software
+distributed under the License is distributed on an "AS IS" BASIS,
+WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+See the License for the specific language governing permissions and
+limitations under the License.
+
+Author: Eric Bidelman (ebidel@gmail.com)
+-->
+<html>
+<head>
+<meta charset="utf-8" />
+<meta http-equiv="X-UA-Compatible" content="chrome=1" />
+<title>HTML5 FileSystem Playground</title>
+<link rel="stylesheet" href="http://fonts.googleapis.com/css?family=Nunito" type="text/css" />
+<link rel="stylesheet" href="css/app.css" type="text/css" />
+</head>
+<body onload="openFS()">
+<section>
+  <h1>HTML5 <a href="http://dev.w3.org/2009/dap/file-system/pub/FileSystem/">FileSystem</a> Playground</h1>
+  <div>
+    <button id="openFsButton" disabled>Open file system</button>
+    <input type="text" id="dir-name" placeholder="directory name" value="myDir"/>
+    <button onclick="mkdir(document.querySelector('#dir-name').value)">New directory</button>
+    <input type="text" id="file-name" placeholder="file name" value="newFile.wav"/>
+    <button onclick="newFile(document.querySelector('#file-name').value)">New file</button>
+    <!--progress id="progress" value="0" min="0" max="100"></progress>-->
+    <input type="checkbox" onclick="document.querySelector('#log').classList.toggle('active')" id="toggle-log" checked><label for="toggle-log">Show log</label>
+  </div>
+  <div style="margin-top:1em;font-size:small">
+     Display as <a href="javascript:" onclick="display(this, 'list')">list</a> | <a href="javascript:" onclick="display(this, 'large')">icons</a>. Double-click on a file/folder name to rename it.
+  </div>
+  <div id="files" class="large"><ul></ul></div>
+  <div id="file-info"></div>
+</section>
+<section>
+  <div id="log" class="active">
+    <button onclick="logger.clear()">Clear</button>
+    <div></div>
+  </div>
+</section>
+
+<script src="js/logger.js"></script>
+<script src="js/dnd.js"></script>
+<script src="../src/filer.js"></script>
+<script>
+var logger = new Logger('#log div');
+var dnd = new DnDFileController('body', function(files) {
+  Utils.toArray(files).forEach(function(file, i) {
+    writeFile(file);
+  });
+});
+
+var filer = new Filer();
+
+// =============================================================================
+var filePreview = document.querySelector('#file-info');
+var filesContainer = document.querySelector('#files');
+var fileList = filesContainer.querySelector('ul');
+var openFsButton = document.querySelector('#openFsButton');
+
+openFsButton.addEventListener('click', function(e) {
+  if (filer && !filer.isOpen) {
+    openFS();
+  } else {
+    this.disabled = false;
+    this.textContent = 'Refresh folder';
+  }
+}, false);
+
+function onError(e) {
+  logger.log('<p class="error">' + e.name + '</p>');
+}
+
+function display(el, type) {
+  if (type == 'list') {
+    filesContainer.classList.remove('large');
+  } else {
+    filesContainer.classList.add('large');
+  }
+}
+
+function toggleContentEditable(el) {
+  if (el.isContentEditable) {
+    el.removeAttribute('contenteditable');
+  } else {
+    el.setAttribute('contenteditable', '');
+    el.focus();
+  }
+}
+
+// Use event delegation to prevent enter key carriage return in file/folder renaming.
+document.addEventListener('keypress', function(e) {
+  var target = e.target;
+  if (target.isContentEditable && 'filename' in target.dataset) {
+    // Prevent enter key from sticking return in the contenteditable box.
+    if (e.keyCode == 13) {
+      e.preventDefault();
+      e.stopPropagation();
+      target.blur();
+    }
+  }
+}, false);
+
+
+function constructEntryHTML(entry, i) {
+  var img = entry.isDirectory ?
+      '<img src="images/icons/folder.png" class="folder" onclick="cd(' + i + ')" title="Open folder" alt="Open folder">' :
+      '<img src="images/icons/file.png" class="file" onclick="openFile(' + i + ')" title="Open file" alt="Open file">';
+
+  var html = [img, '<div data-filename ondblclick="toggleContentEditable(this)" onblur="rename(this, ', i, ')">',
+              entry.name, '</div>'];
+
+  if (entry.isFile) {
+    html.push('<a href="javascript:" onclick="readFile(', i, ')"><img src="images/icons/library.png" class="icon" title="Read file" alt="Read file"></a>');
+  }
+
+  html.push('<a href="javascript:" onclick="remove(this,', i, ');"><img src="images/icons/trash_empty.png" class="icon" title="Remove" alt="Remove"></a>');
+
+  return html.join('');
+}
+
+function addEntryToList(entry, opt_idx) {
+  var idx = (opt_idx === undefined) ? filer.entries.length - 1 : opt_idx;
+
+  var li = document.createElement('li');
+  li.innerHTML = constructEntryHTML(entry, idx);
+  fileList.appendChild(li);
+}
+
+function renderEntries(entries) {
+  // Clear out existing entries and reset HTML.
+  fileList.innerHTML = '';
+
+  var li = document.createElement('li');
+  li.innerHTML = '<a href="javascript:" onclick="cd(-1)" class="parentDir"><img src="images/icons/folder.png" class="folder"> [ parent directory ]</a>'
+  fileList.appendChild(li);
+
+  if (!entries.length) {
+    var li = document.createElement('li');
+    li.innerHTML = 'No files.'
+    fileList.appendChild(li);
+    return;
+  }
+
+  entries.forEach(function(entry, i) {
+    /*entry.getMetadata(function(e) {
+    console.log(e)
+    }, onError);*/
+    addEntryToList(entry, i);
+  });
+}
+
+function openFS() {
+  filer.init({persistent: false, size: 1024 * 1024}, function(fs) {
+    logger.log(fs.root.toURL())
+    filer.ls('.', function(entries) {
+      renderEntries(entries);
+      logger.log('<p>Opened fs: ' + fs.name, + '</p>');
+
+      var evt = document.createEvent('Event');
+      evt.initEvent('click', false, false);
+      openFsButton.dispatchEvent(evt);
+    }, onError);
+  }, onError);
+}
+
+function mkdir(name) {
+  if (!name) return;
+
+  try {
+    filer.mkdir(name, true, addEntryToList, onError);
+  } catch(e) {
+    logger.log('<p class="error">' + e + '</p>');
+  }
+}
+
+function cd(i) {
+  if (i == -1) {
+    var path = '..';
+  } else {
+    var path = filer.entries[i].fullPath;
+  }
+
+  filer.ls(path, renderEntries, onError);
+}
+
+function openFile(i) {
+  filer.open(filer.entries[i].name);
+}
+
+function newFile(name) {
+  if (!name) return;
+
+  try {
+    filer.create(name, true, addEntryToList, onError);
+  } catch(e) {
+    logger.log('<p class="error">' + e + '</p>');
+  }
+}
+
+function writeFile(file) {
+  if (!file) return;
+
+  filer.write(file.name, {data: file, type: file.type}, function(fileEntry, fileWriter) {
+    console.log(fileEntry, fileWriter);
+    addEntryToList(fileEntry);
+  }, onError);
+}
+
+function rename(el, i) {
+  filer.rename(filer.entries[i], el.textContent, function(entry) {
+    logger.log('<p>' + filer.entries[i].name + ' renamed to ' + entry.name + '</p>');
+    filer.entries[i] = entry;
+  });
+  toggleContentEditable(el);
+}
+
+function remove(link, i) {
+  var entry = filer.entries[i];
+
+  if (!confirm('Delete ' + entry.name + '?')) {
+    return;
+  }
+
+  filer.rm(entry, function() {
+    var li = link.parentNode;
+    li.classList.add('fadeout');
+    li.addEventListener('webkitTransitionEnd', function(e) {
+      this.parentNode.removeChild(this);
+      filer.ls('.', renderEntries, onError); // Just re-read this dir.
+    }, false);
+  }, onError);
+}
+
+function copy(el, i) {
+  filer.cp(filer.entries[i], el.textContent, function(entry) {
+    logger.log('<p>' + filer.entries[i].name + ' renamed to ' + entry.name + '</p>');
+    filer.entries[i] = entry;
+  });
+  toggleContentEditable(el);
+}
+
+function readFile(i) {
+  var entry = filer.entries[i];
+
+  try {
+    filer.open(entry.name, function(file) {
+
+      filePreview.innerHTML = [
+        '<p><b>', file.name, '</b> (', file.type, ') - ', file.size,
+        ' bytes, modified: ', file.lastModifiedDate.toLocaleDateString(), '</p>'].join('');
+
+      if (file.type.match(/audio.*/)) {
+        var player = document.createElement('audio');
+        player.controls = true;
+        player.src = entry.toURL();
+
+        filePreview.appendChild(player);
+
+        player.load();
+        player.play();
+
+      } else if (file.type.match(/text.*/)) {
+
+        var iframe = document.createElement('iframe');
+        iframe.src = entry.toURL();
+
+        filePreview.appendChild(iframe);
+
+      } else if (file.type.match(/image.*/)) {
+
+        var img = document.createElement('img');
+        img.src = entry.toURL();
+
+        filePreview.appendChild(img);
+      }
+
+    }, onError);
+  } catch(e) {
+    logger.log('<p class="error">' + e + '</p>');
+  }
+}
+</script>
+<!--[if IE]>
+  <script src="http://ajax.googleapis.com/ajax/libs/chrome-frame/1/CFInstall.min.js"></script>
+  <script>CFInstall.check({mode: 'overlay'});</script>
+<![endif]-->
+</body>
+</html>

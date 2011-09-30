@@ -1,0 +1,240 @@
+html, body {
+  font: 15px normal 'Nunito', Trebuchet, Arial, sans-serif;
+  color: #444;
+  margin: 0;
+  height: 100%;
+  width: 100%;
+}
+body {
+  background: -webkit-radial-gradient(center center, #fff, #eee) no-repeat;
+  /*background: url('bg-rep.png');*/
+  color: #222;
+  overflow-x: hidden;
+}
+label {
+  cursor: pointer;
+  vertical-align: middle;
+}
+[contenteditable] {
+  border: 1px dashed transparent;
+  outline: none;
+  border-radius: 5px;
+}
+[contenteditable]:hover {
+  border: 1px dashed #999;
+}
+a {
+  color: navy;
+  text-decoration: none;
+}
+a:hover {
+  text-decoration: underline;
+}
+ul, li {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+li {
+  padding-bottom: 2px;
+}
+h1 {
+  font-family: 'Nunito';
+  margin: 0 0 0.5em 0;
+  padding-bottom: 0.25em;
+  text-shadow: -1px -1px white;
+  box-shadow: 0 1px 0 white;
+  border-bottom: 1px solid #ccc;
+}
+.dropping {
+  background-image: -webkit-gradient(
+    linear, left bottom, left top,
+    color-stop(0.13, rgb(209,144,23)),
+    color-stop(0.57, rgb(251,173,51)),
+    color-stop(0.79, rgb(255,208,77))
+  );
+  background-image: -moz-linear-gradient(
+    center bottom,
+    rgb(209,144,23) 13%,
+    rgb(251,173,51) 57%,
+    rgb(255,208,77) 79%
+  )
+}
+button {
+  background: -webkit-linear-gradient(#F9F9F9 40%, #E3E3E3 70%);
+  border: 1px solid #ccc;
+  border-radius: 3px;
+  margin: 0 8px 0 0;
+  color: black;
+  padding: 5px 8px;
+  outline: none;
+  white-space: nowrap;
+  vertical-align: middle;
+  -webkit-user-select:none;
+  user-select: none;
+  cursor: pointer;
+}
+button:not([disabled]):hover {
+  border: 1px solid #939393;
+}
+button:not([disabled]):active {
+  background: -webkit-linear-gradient(#E3E3E3 40%, #F9F9F9 70%);
+}
+button[disabled] {
+  color: #ccc;
+}
+input[type='text'], textarea, iframe {
+  margin: 0;
+  padding: 5px;
+  border-radius: 3px;
+  border: 1px solid #ccc;
+  box-shadow: 0 3px 3px #eee inset;
+  outline: none;
+  background: white;
+}
+input {
+  vertical-align: middle;
+}
+body > section:first-child {
+  padding: 1em;
+}
+#files {
+  margin: 10px 10px 10px 0;
+  float: left;
+  height: 400px;
+  display: inline-block;
+  overflow: auto;
+  border: 1px solid #eee;
+  border-radius: 10px;
+  box-shadow: 0 -2px 3px #ddd inset, 0 2px 3px #ddd inset;
+  padding: 10px;
+  background: -webkit-linear-gradient(#fff 80%, #eee);
+}
+#files li {
+  -webkit-transition: opacity 0.2s ease-out;
+  white-space: nowrap;
+}
+#files li img {
+  height: 16px;
+  width: 16px;
+}
+img.folder,
+img.file {
+  cursor: pointer;
+}
+.parentDir:hover {
+  text-decoration: none;
+}
+.parentDir img {
+  vertical-align: bottom;
+}
+#files li img,
+#files li > div {
+  vertical-align: middle;
+  display: inline-block;
+}
+#files li > a {
+  font-size: small;
+}
+#files li:hover img.icon {
+  opacity: 0.25;
+}
+#files li a img.icon {
+  height: 25px;
+  width: 25px;
+  opacity: 0;
+  -webkit-transition: opacity 0.4s ease-out;
+}
+#files li a img.icon:hover {
+  opacity: 1;
+}
+#files li.fadeout {
+  opacity: 0;
+}
+#files li div[data-filename] {
+  width: 150px;
+  min-width: 150px;
+  margin: 0 5px;
+  padding: 1px 2px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+#files li div[data-filename]:hover {
+  overflow: visible;
+  width: auto;
+}
+#file-info {
+  margin: 15px auto;
+  float: left;
+}
+#file-info p {
+  margin-top: 0;
+}
+#file-info textarea {
+  width: 400px;
+  height: 100px;
+}
+#file-info img {
+  max-height: 350px;
+  border: 1px solid #eee;
+  border-radius: 5px;
+  padding: 10px;
+}
+#file-info iframe {
+  width: 500px;
+  height: 300px;
+}
+.error::before {
+  content: 'Error: ';
+}
+#log {
+  font: 90% normal 'Courier New';
+  position: absolute;
+  background: -webkit-linear-gradient(#fff 40%, #eee);
+  top: 0;
+  right: 0;
+  width: 350px;
+  height: 100%;
+  overflow: auto;
+  overflow-x: hidden;
+  padding: 40px 10px 10px 10px;
+  box-sizing: border-box;
+  box-shadow: -3px 0 10px #ddd;
+  -webkit-transition: -webkit-transform 0.2s ease-out;
+  -webkit-transform: translate(500px) translateZ(0);
+}
+#log.active {
+  -webkit-transform: translateX(0) translateZ(0);
+}
+#log button {
+  position: absolute;
+  right: 0;
+  top: 0;
+  margin: 10px;
+}
+#log p {
+  color: navy;
+  margin: 3px 0;
+}
+#log .error {
+  color: red;
+}
+
+#files.large {
+  float: none;
+  min-width: 800px;
+  width: 70%;
+  height: auto;
+}
+#files.large ul {
+  -webkit-column-count: 3;
+  -webkit-column-gap: 0;
+}
+#files.large li {
+  padding-bottom: 10px;
+}
+#files.large li img {
+  height: 50px;
+  width: 50px;
+}
