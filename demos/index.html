@@ -20,13 +20,13 @@ Author: Eric Bidelman (ebidel@gmail.com)
 <head>
 <meta charset="utf-8" />
 <meta http-equiv="X-UA-Compatible" content="chrome=1" />
-<title>HTML5 FileSystem Playground</title>
-<link rel="stylesheet" href="http://fonts.googleapis.com/css?family=Nunito" type="text/css" />
+<title>HTML5 Filesystem Playground</title>
+<link rel="stylesheet" href="http://fonts.googleapis.com/css?family=Open+Sans" type="text/css" />
 <link rel="stylesheet" href="css/app.css" type="text/css" />
 </head>
 <body onload="openFS()">
 <section>
-  <h1>HTML5 <a href="http://dev.w3.org/2009/dap/file-system/pub/FileSystem/">FileSystem</a> Playground</h1>
+  <h1>HTML5 <a href="http://dev.w3.org/2009/dap/file-system/pub/FileSystem/">Filesystem</a> Playground</h1>
   <div>
     <button id="openFsButton" disabled>Open file system</button>
     <input type="text" id="dir-name" placeholder="directory name" value="myDir"/>
@@ -34,16 +34,17 @@ Author: Eric Bidelman (ebidel@gmail.com)
     <input type="text" id="file-name" placeholder="file name" value="newFile.wav"/>
     <button onclick="newFile(document.querySelector('#file-name').value)">New file</button>
     <!--progress id="progress" value="0" min="0" max="100"></progress>-->
-    <input type="checkbox" onclick="document.querySelector('#log').classList.toggle('active')" id="toggle-log" checked><label for="toggle-log">Show log</label>
+    <input type="checkbox" onclick="document.querySelector('#log').classList.toggle('active')" id="toggle-log"><label for="toggle-log">Show log</label>
   </div>
   <div style="margin-top:1em;font-size:small">
-     Display as <a href="javascript:" onclick="display(this, 'list')">list</a> | <a href="javascript:" onclick="display(this, 'large')">icons</a>. Double-click on a file/folder name to rename it.
+     Display as: <a href="javascript:" onclick="display(this, 'list')">list</a> | <a href="javascript:" onclick="display(this, 'large')">icons</a>
   </div>
   <div id="files" class="large"><ul></ul></div>
+  <div>Double-click on a file/folder name to rename it.</div>
   <div id="file-info"></div>
 </section>
 <section>
-  <div id="log" class="active">
+  <div id="log">
     <button onclick="logger.clear()">Clear</button>
     <div></div>
   </div>
@@ -124,6 +125,7 @@ function constructEntryHTML(entry, i) {
 
   if (entry.isFile) {
     html.push('<a href="javascript:" onclick="readFile(', i, ')"><img src="images/icons/library.png" class="icon" title="Read file" alt="Read file"></a>');
+    html.push('<a href="', entry.toURL(), '" download><img src="images/icons/download.png" class="icon" title="Download" alt="Download"></a>');
   }
 
   html.push('<a href="javascript:" onclick="remove(this,', i, ');"><img src="images/icons/trash_empty.png" class="icon" title="Remove" alt="Remove"></a>');
@@ -170,7 +172,7 @@ function openFS() {
     logger.log(fs.root.toURL())
     filer.ls('.', function(entries) {
       renderEntries(entries);
-      logger.log('<p>Opened fs: ' + fs.name, + '</p>');
+      logger.log('<p>Opened: ' + fs.name, + '</p>');
 
       var evt = document.createEvent('Event');
       evt.initEvent('click', false, false);
