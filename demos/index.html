@@ -26,7 +26,7 @@ Author: Eric Bidelman (ebidel@gmail.com)
 </head>
 <body>
 <section>
-  <h1>HTML5 <a href="http://dev.w3.org/2009/dap/file-system/pub/FileSystem/">Filesystem</a> Playground</h1>
+  <h1>HTML5 <a href="http://www.html5rocks.com/tutorials/file/filesystem/" target="_blank">Filesystem</a> Playground</h1>
   <div style="margin-bottom:10px;">
     <button id="openFsButton">Open file system</button>
     <input type="text" id="dir-name" placeholder="directory name" value="myDir"/>
@@ -227,8 +227,9 @@ function writeFile(file) {
 
   filer.write(file.name, {data: file, type: file.type},
     function(fileEntry, fileWriter) {
-      console.log(fileEntry, fileWriter);
+//console.log(fileEntry, fileWriter);
       addEntryToList(fileEntry);
+      filer.ls('.', renderEntries, onError); // Just re-read this dir.
     },
     onError
   );

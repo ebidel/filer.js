@@ -112,7 +112,7 @@ body > section:first-child {
   box-sizing: border-box;
 }
 #files li {
-  /*-webkit-transition: opacity 0.2s ease-out;*/
+  -webkit-transition: opacity 0.2s ease-out;
   white-space: nowrap;
 }
 #files li img {
