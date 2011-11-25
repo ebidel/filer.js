@@ -308,8 +308,9 @@ var Filer = new function() {
     };
 
     if (dirEntryOrPath.isDirectory) {
-      getEntry_(callback, dirEntryOrPath);
+      callback(dirEntryOrPath);
     } else {
+      // We were passed a path. Look up DirectoryEntry and proceeed.
       cwd_.getDirectory(dirEntryOrPath, {}, callback, opt_errorHandler);
     }
     
