@@ -99,6 +99,7 @@ body > section:first-child {
 #files {
   margin: 10px 10px 10px 0;
   float: left;
+  clear: both;
   height: 400px;
   display: inline-block;
   overflow-y: auto;
@@ -171,11 +172,33 @@ img.download {
   width: auto;
 }
 #file-info {
-  margin: 15px auto;
-  float: left;
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(0, 0, 0, 0.5);
+  box-sizing: border-box;
+  text-align: center;
+  display: none;
+}
+#file-info.show {
+  z-index: 1000;
+  display: -webkit-box;
+  -webkit-box-orient: vertical;
+  -webkit-box-pack: center;
+}
+#file-info >  div,
+#file-info p {
+  padding: 10px;
+  background: #fff;
+  margin-bottom: 2em;
+  box-shadow: 0 0 15px #222;
 }
 #file-info p {
-  margin-top: 0;
+  display: inline-block;
+  margin: 1em 0 0 0;
+  padding: 5em;
 }
 #file-info textarea {
   width: 400px;
@@ -183,9 +206,10 @@ img.download {
 }
 #file-info img {
   max-height: 350px;
-  border: 1px solid #eee;
+
   border-radius: 5px;
-  padding: 10px;
+
+  box-shadow: 0 0 15px #222;
 }
 #file-info iframe {
   width: 500px;

@@ -24,11 +24,11 @@ Author: Eric Bidelman (ebidel@gmail.com)
 <link rel="stylesheet" href="http://fonts.googleapis.com/css?family=Open+Sans" type="text/css" />
 <link rel="stylesheet" href="css/app.css" type="text/css" />
 </head>
-<body onload="openFS()">
+<body>
 <section>
   <h1>HTML5 <a href="http://dev.w3.org/2009/dap/file-system/pub/FileSystem/">Filesystem</a> Playground</h1>
-  <div>
-    <button id="openFsButton" disabled>Open file system</button>
+  <div style="margin-bottom:10px;">
+    <button id="openFsButton">Open file system</button>
     <input type="text" id="dir-name" placeholder="directory name" value="myDir"/>
     <button onclick="mkdir(document.querySelector('#dir-name').value)">New directory</button>
     <input type="text" id="file-name" placeholder="file name" value="newFile.wav"/>
@@ -36,11 +36,11 @@ Author: Eric Bidelman (ebidel@gmail.com)
     <!--progress id="progress" value="0" min="0" max="100"></progress>-->
     <input type="checkbox" onclick="document.querySelector('#log').classList.toggle('active')" id="toggle-log"><label for="toggle-log">Show log</label>
   </div>
-  <div style="margin-top:1em;font-size:small">
+  <div style="font-size:small;display:inline-block">
      Display as: <a href="javascript:" onclick="display(this, 'list')">list</a> | <a href="javascript:" onclick="display(this, 'large')">icons</a>
   </div>
+  <div style="float:right">Double-click on a file/folder name to rename it.</div>
   <div id="files" class="large"><ul></ul></div>
-  <div>Double-click on a file/folder name to rename it.</div>
   <div id="file-info"></div>
 </section>
 <section>
@@ -75,7 +75,6 @@ openFsButton.addEventListener('click', function(e) {
   if (filer && !filer.isOpen) {
     openFS();
   } else {
-    this.disabled = false;
     this.textContent = 'Refresh folder';
   }
 }, false);
@@ -101,11 +100,19 @@ function toggleContentEditable(el) {
   }
 }
 
-// Use event delegation to prevent enter key carriage return in file/folder renaming.
-document.addEventListener('keypress', function(e) {
+document.addEventListener('keydown', function(e) {
   var target = e.target;
+
+  if (e.keyCode == 27) { // ESC
+    filePreview.classList.remove('show');
+    filePreview.innerHTML = '';
+    e.preventDefault();
+    e.stopPropagation();
+  }
+
+  // Prevent enter key from inserting carriage return in the contenteditable
+  // file/folder renaming.
   if (target.isContentEditable && 'filename' in target.dataset) {
-    // Prevent enter key from sticking return in the contenteditable box.
     if (e.keyCode == 13) {
       e.preventDefault();
       e.stopPropagation();
@@ -144,12 +151,12 @@ function addEntryToList(entry, opt_idx) {
 function renderEntries(resultEntries) {
   entries = resultEntries; // Cache the result set.
 
-
-  // Clear out existing entries and reset HTML.
-  fileList.innerHTML = '';
+  fileList.innerHTML = ''; // Clear out existing entries and reset HTML.
 
   var li = document.createElement('li');
-  li.innerHTML = '<a href="javascript:" onclick="cd(-1)" class="parentDir"><img src="images/icons/folder.png" class="folder"> [ parent directory ]</a>'
+  li.innerHTML = '<a href="javascript:" onclick="cd(-1)" class="parentDir">' + 
+      '<img src="images/icons/folder.png" class="folder">' + 
+      '[ parent directory ]</a>';
   fileList.appendChild(li);
 
   if (!resultEntries.length) {
@@ -218,16 +225,22 @@ function newFile(name) {
 function writeFile(file) {
   if (!file) return;
 
-  filer.write(file.name, {data: file, type: file.type}, function(fileEntry, fileWriter) {
-    console.log(fileEntry, fileWriter);
-    addEntryToList(fileEntry);
-  }, onError);
+  filer.write(file.name, {data: file, type: file.type},
+    function(fileEntry, fileWriter) {
+      console.log(fileEntry, fileWriter);
+      addEntryToList(fileEntry);
+    },
+    onError
+  );
 }
 
 function rename(el, i) {
   filer.rename(entries[i], el.textContent, function(entry) {
     logger.log('<p>' + entries[i].name + ' renamed to ' + entry.name + '</p>');
     entries[i] = entry;
+
+    // Fill download link with updated filsystem URL.
+    el.parentElement.querySelector('[download]').href = entry.toURL();
   });
   toggleContentEditable(el);
 }
@@ -263,9 +276,13 @@ function readFile(i) {
   try {
     filer.open(entry.name, function(file) {
 
+      filePreview.classList.toggle('show');
+
       filePreview.innerHTML = [
-        '<p><b>', file.name, '</b> (', file.type, ') - ', file.size,
-        ' bytes, modified: ', file.lastModifiedDate.toLocaleDateString(), '</p>'].join('');
+        '<div><b>', file.name, '</b> ',
+        (file.type ? '(' + file.type + ')' : ''), ' - ', file.size,
+        ' bytes, modified: ', file.lastModifiedDate.toLocaleDateString(),
+        '</div>'].join('');
 
       if (file.type.match(/audio.*/)) {
         var player = document.createElement('audio');
@@ -290,6 +307,10 @@ function readFile(i) {
         img.src = entry.toURL();
 
         filePreview.appendChild(img);
+      } else {
+        var p = document.createElement('p');
+        p.textContent = 'No preview.'
+        filePreview.appendChild(p);
       }
 
     }, onError);
@@ -297,6 +318,8 @@ function readFile(i) {
     logger.log('<p class="error">' + e + '</p>');
   }
 }
+
+openFS();
 </script>
 <!--[if IE]>
   <script src="http://ajax.googleapis.com/ajax/libs/chrome-frame/1/CFInstall.min.js"></script>
