@@ -46,13 +46,13 @@ var Utils = {
   /**
    * Creates a data: URL from string data.
    *
-   * @param {string} contentType The mimetype of the data str represents.
    * @param {string} str The content to encode the data: URL from.
+   * @param {string} contentType The mimetype of the data str represents.
    * @param {bool=} opt_isBinary Whether the string data is a binary string
    *     (and therefore should be base64 encoded). True by default.
    * @return {string} The created data: URL.
    */
-  toDataURL: function(contentType, str, opt_isBinary) {
+  toDataURL: function(str, contentType, opt_isBinary) {
     var isBinary = opt_isBinary != undefined ? opt_isBinary : true;
     if (isBinary) {
       return 'data:' + contentType + ';base64,' + self.btoa(str);
@@ -65,10 +65,10 @@ var Utils = {
    * Creates a blob: URL from a binary str.
    *
    * @param {string} binStr The content as a binary string.
-   * @param {string} contentType The mimetype of the data.
+   * @param {string=} opt_contentType An optional mimetype of the data.
    * @return {string} A new blob: URL.
    */
-  strToObjectURL: function(binStr, contentType) {
+  strToObjectURL: function(binStr, opt_contentType) {
 
     var ui8a = new Uint8Array(binStr.length);
     for (var i = 0; i < ui8a.length; ++i) { 
@@ -78,7 +78,9 @@ var Utils = {
     var bb = new BlobBuilder();
     bb.append(ui8a.buffer);
 
-    return self.URL.createObjectURL(bb.getBlob(contentType));
+    var blob = opt_contentType ? bb.getBlob(opt_contentType) : bb.getBlob();
+
+    return self.URL.createObjectURL(blob);
   },
 
   /**
@@ -91,8 +93,13 @@ var Utils = {
     return self.URL.createObjectURL(blob);
   },
 
-  // Helper function that will create a binary stream out of an array of numbers
-  // bytes must be an array and contain numbers, each varying from 0-255
+  /**
+   * Create a binary string out of an array of numbers (bytes), each varying
+   * from 0-255.
+   *
+   * @param {Array} bytes The array of numbers to transform into a binary str.
+   * @return {string} The byte array as a string.
+   */
   arrayToBinaryString: function(bytes) {
     if (typeof bytes != typeof []) {
       return null;
@@ -114,7 +121,8 @@ var MyFileError = function(obj) {
 };
 
 
-/* Extend FileError custom errors and a convenience method to get error code mnemonic. */
+// Extend FileError with custom errors and a convenience method to get error
+// code mnemonic.
 FileError.BROWSER_NOT_SUPPORTED = 1000;
 
 // TODO: remove when FileError.name is implemented (crbug.com/86014).
@@ -133,14 +141,12 @@ var Filer = new function() {
 
   const FS_INIT_ERROR_MSG = 'Filesystem has not been initialized.';
   const FS_URL_SCHEME = 'filesystem:';
-  const DEFAULT_FS_SIZE = 1024 * 1024;
+  const DEFAULT_FS_SIZE = 1024 * 1024; // 1MB.
 
   var fs_ = null;
   var cwd_ = null;
   var isOpen_ = false;
   var baseFsUrl_ = null;
-
-  //var entries_ = []; // Cached copy of the cwd's entries.
 
   var isFsURL_ = function(path) {
     return path.indexOf(FS_URL_SCHEME) == 0;
@@ -170,7 +176,8 @@ var Filer = new function() {
     var onError = function(e) {
       if (e.code == FileError.NOT_FOUND_ERR) {
         if (destStr) {
-          throw new Error('"' + srcStr + '" or "' + destStr + '" does not exist.');
+          throw new Error('"' + srcStr + '" or "' + destStr +
+                          '" does not exist.');
         } else {
           throw new Error('"' + srcStr + '" does not exist.');
         }
@@ -196,15 +203,13 @@ var Filer = new function() {
   };
 
   function Filer(fs) {
-    /*this.fs = fs || null;
-    if (fs) {
-      this.root = fs.root;
-    }*/
     fs_  = fs || null;
     if (fs_) {
       cwd_ = fs_.root;
       isOpen_ = true; // TODO: this may not be the case.
-      baseFsUrl_ = fs_.root.toURL(); // e.g. "filesystem:http://example.com/temporary/"
+
+      // Produces something like "filesystem:http://example.com/temporary/".
+      baseFsUrl_ = fs_.root.toURL();
     }
   }
 
@@ -216,25 +221,24 @@ var Filer = new function() {
     },
     get isOpen() {
       return isOpen_;
-    }/*,
-    get entries() {
-      return entries_;
-    }*/
+    }
   }
 
   /**
    * Initializes (opens) the file system.
    *
-   * @param {object} initObj Object literal with the following properties:
+   * @param {object=} opt_initObj Optional object literal with the following
+   *     properties. Note: If {} or null is passed, default values are used.
    *     persistent {Boolean=} Whether the browser should use persistent storage.
    *         Default is false.
-   *     size {int} The storage size (in bytes) to open the filesystem with.
+   *     size {int=} The storage size (in bytes) to open the filesystem with.
    *         Defaults to DEFAULT_FS_SIZE.
    * @param {Function=} opt_successCallback Optional success handler passed a
   *      DOMFileSystem object.
    * @param {Function=} opt_errorHandler Optional error callback.
    */
-  Filer.prototype.init = function(initObj, opt_successCallback, opt_errorHandler) {
+  Filer.prototype.init = function(opt_initObj, opt_successCallback,
+                                  opt_errorHandler) {
     if (!self.requestFileSystem) {
       throw new MyFileError({
         code: FileError.BROWSER_NOT_SUPPORTED,
@@ -242,6 +246,8 @@ var Filer = new function() {
       });
       return;
     }
+
+    initObj = !opt_initObj ? {} : opt_initObj; // Use defaults if obj is null.
 
     var size = initObj.size || DEFAULT_FS_SIZE;
     this.type = self.TEMPORARY;
@@ -267,14 +273,15 @@ var Filer = new function() {
   /**
    * Reads the contents of a directory.
    *
-   * @param {string|DirectoryEntry} dirEntryOrPath A path relative to the current
-   *     working directory. In most cases that is the root entry, unless cd()
-   *     has been called. A DirectoryEntry can also be passed, in which case,
-   *     its contents will be returned.
+   * @param {string|DirectoryEntry} dirEntryOrPath A path relative to the
+   *     current working directory. In most cases that is the root entry, unless
+   *     cd() has been called. A DirectoryEntry can also be passed, in which
+   *     case, its contents will be returned.
    * @param {Function} successCallback Success handler passed an Array<Entry>.
    * @param {Function=} opt_errorHandler Optional error callback.
    */
-  Filer.prototype.ls = function(dirEntryOrPath, successCallback, opt_errorHandler) {
+  Filer.prototype.ls = function(dirEntryOrPath, successCallback,
+                                opt_errorHandler) {
     if (!fs_) {
       throw new Error(FS_INIT_ERROR_MSG);
     }
@@ -322,10 +329,12 @@ var Filer = new function() {
    * @param {string} name The name of the directory to create.
    * @param {bool=} opt_exclusive True (default) if an error should be thrown if
    *     the directory already exists.
-   * @param {Function} successCallback Success handler passed the DirectoryEntry.
+   * @param {Function} successCallback Success handler passed the
+   *     DirectoryEntry.
    * @param {Function=} opt_errorHandler Optional error callback.
    */
-  Filer.prototype.mkdir = function(name, opt_exclusive, successCallback, opt_errorHandler) {
+  Filer.prototype.mkdir = function(name, opt_exclusive, successCallback,
+                                   opt_errorHandler) {
     if (!fs_) {
       throw new Error(FS_INIT_ERROR_MSG);
     }
@@ -355,8 +364,8 @@ var Filer = new function() {
   /**
    * Opens a file.
    *
-   * @param {string} path The relative path of the file to open, from the current
-   *     workind directory.
+   * @param {string} path The relative path of the file to open, from the
+   *     current workind directory.
    * @param {Function=} opt_successCallback Optional success callback.
    *     If present, this callback is passed a File object. If no success
    *     callback is passed, the file is opened in a popup window using its
@@ -391,7 +400,8 @@ var Filer = new function() {
    *     the new FileEntry.
    * @param {Function=} opt_errorHandler Optional error callback.
    */
-  Filer.prototype.create = function(path, opt_exclusive, successCallback, opt_errorHandler) {
+  Filer.prototype.create = function(path, opt_exclusive, successCallback,
+                                    opt_errorHandler) {
     if (!fs_) {
       throw new Error(FS_INIT_ERROR_MSG);
     }
@@ -418,7 +428,8 @@ var Filer = new function() {
    *     the updated entry.
    * @param {Function=} opt_errorHandler Optional error callback.
    */
-  Filer.prototype.rename = function(entry, newName, opt_successCallback, opt_errorHandler) {
+  Filer.prototype.rename = function(entry, newName, opt_successCallback,
+                                    opt_errorHandler) {
     // Prevent error of renaming file to same name.
     if (entry.name == newName || entry == newName) {
       return;
@@ -480,7 +491,8 @@ var Filer = new function() {
     *     on a successful copy.
     * @param {Function=} opt_errorHandler Optional error callback.
     */
-  Filer.prototype.cp = function(src, dest, opt_newName, opt_successCallback, opt_errorHandler) {
+  Filer.prototype.cp = function(src, dest, opt_newName, opt_successCallback,
+                                opt_errorHandler) {
     if (!fs_) {
       throw new Error(FS_INIT_ERROR_MSG);
     }
@@ -494,7 +506,8 @@ var Filer = new function() {
         if (!destDir.isDirectory) {
           throw new Error('Oops! "' + destDir.name + ' is not a directory!');
         }
-        srcEntry.copyTo(destDir, newName, opt_successCallback, opt_errorHandler);
+        srcEntry.copyTo(destDir, newName, opt_successCallback,
+                        opt_errorHandler);
       }, src, dest);
     }
   };
@@ -511,7 +524,8 @@ var Filer = new function() {
    *     the created FileEntry and FileWriter object used to write the data.
    * @param {Function=} opt_errorHandler Optional error callback.
    */
-  Filer.prototype.write = function(name, dataObj, successCallback, opt_errorHandler) {
+  Filer.prototype.write = function(name, dataObj, successCallback,
+                                   opt_errorHandler) {
     if (!fs_) {
       throw new Error(FS_INIT_ERROR_MSG);
     }

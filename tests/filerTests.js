@@ -42,7 +42,7 @@ module('init()', {
 
 });*/
 
-test('default arguments', 5, function() {
+test('default arguments', 6, function() {
   var filer = this.filer;
 
   equals(filer.isOpen, false, 'filesystem not open');
@@ -57,6 +57,12 @@ test('default arguments', 5, function() {
     var filer2 = new Filer(filer.fs);
     ok(filer2.fs === filer.fs,
        'filesystem initialized with existing DOMFileSystem object');
+    start();
+  }, onError);
+
+  stop();
+  filer.init(null, function(fs) {
+    ok('null used as first arg to init()');
     start();
   }, onError);
 
