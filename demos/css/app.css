@@ -85,7 +85,7 @@ li {
 }
 button {
   background: -webkit-linear-gradient(#F9F9F9 40%, #E3E3E3 70%);
-  border: 1px solid #ccc;
+  border: 1px solid #888;
   border-radius: 3px;
   margin: 0 8px 0 0;
   color: black;
@@ -97,10 +97,10 @@ button {
   user-select: none;
   cursor: pointer;
 }
-button:not([disabled]):hover {
-  border: 1px solid #939393;
+button:not(:disabled):hover {
+  border: 1px solid #000;
 }
-button:not([disabled]):active {
+button:not(:disabled):active {
   background: -webkit-linear-gradient(#E3E3E3 40%, #F9F9F9 70%);
 }
 [disabled] {
@@ -125,15 +125,23 @@ body > section:first-of-type {
   padding-top: 0;
 }
 header {
-  display: -webkit-box;
-  -webkit-box-align: center;
-  box-shadow: 0 5px 10px #eee;
+  /*display: -webkit-box;
+  -webkit-box-align: center;*/
+  display: -webkit-flexbox;
+  box-shadow: 0 5px 5px #ccc;
   background: white;
+  background: rgb(207,231,250);
+  background: -webkit-linear-gradient(top, rgba(207,231,250,1) 0%, rgba(99,147,193,1) 100%);
 }
 header h1 {
   font-family: 'Open Sans';
-  text-shadow: 1px 1px white;
+  font-size: 20px;
+  text-shadow: 0px -1px black;
   margin: 0 1em 0 0;
+  color: white;
+}
+header h1 a {
+  color: inherit;
 }
 #files {
   float: left;
@@ -158,8 +166,8 @@ header h1 {
   border: 3px solid transparent;
 }
 #files li.on {
-  background: rgba(25, 118, 169, 0.1);
-  border-color: rgba(25, 118, 169, 0.5);
+  background: rgba(207,231,250,1);
+  border-color: rgba(99,147,193,1);
 }
 #files li img {
   height: 16px;

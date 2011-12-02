@@ -140,6 +140,7 @@ FileError.prototype.__defineGetter__('name', function() {
 var Filer = new function() {
 
   const FS_INIT_ERROR_MSG = 'Filesystem has not been initialized.';
+  const NOT_IMPLEMENTED_MSG = 'Not implemented.';
   const FS_URL_SCHEME = 'filesystem:';
   const DEFAULT_FS_SIZE = 1024 * 1024; // 1MB.
 
@@ -478,6 +479,22 @@ var Filer = new function() {
       entry.removeRecursively(successCallback, opt_errorHandler);
     }
   };
+
+  /**
+   * Changes the current working directory.
+   *
+   * @param {Function} successCallback Success callback, which is passed
+   *     the DirectoryEntry of the new current directory.
+   * @param {Function=} opt_errorHandler Optional error callback.
+   */
+  Filer.prototype.cd = function(successCallback, opt_errorHandler) {
+    if (!fs_) {
+     throw new Error(FS_INIT_ERROR_MSG);
+    }
+
+    throw new Error(NOT_IMPLEMENTED_MSG);
+    // TODO: Implement me. Change cwd_ = fs_.root;
+  }
 
   /**
     * Copies a file or entire directory.
