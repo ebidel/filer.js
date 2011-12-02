@@ -118,6 +118,14 @@ function toggleLog(opt_hide) {
   }
 }
 
+
+function click(el) {
+  // Simulate link click on an element.
+  var evt = document.createEvent('Event');
+  evt.initEvent('click', false, false);
+  el.dispatchEvent(evt);
+}
+
 var currentLi = 1;
 
 document.addEventListener('keydown', function(e) {
@@ -153,7 +161,9 @@ document.addEventListener('keydown', function(e) {
 
   if (target.nodeName != 'INPUT') {
     if (e.keyCode == 8) { // Backspace.
-
+      if (active) {
+        click(active.querySelector('a[data-remove-link]'));
+      }
       e.preventDefault();
       return;
     } else if (e.keyCode == 13) {  // Enter
@@ -161,16 +171,7 @@ document.addEventListener('keydown', function(e) {
         if (active.querySelector('.folder')) {
           currentLi = 1; // reset current active to first item in current folder.
         }
-
-        // Simulate link click. If file, click preview link. If folder, cd into it.
-        var evt = document.createEvent('Event');
-        evt.initEvent('click', false, false);
-        var a = active.querySelector('a[data-preview]');
-        if (!a) {
-          a = active.querySelector('img');
-        }
-        a.dispatchEvent(evt);
-
+        click(active.querySelector('a[data-preview-link]') || active.querySelector('img'));
         e.preventDefault();
         return;
       }
@@ -204,11 +205,11 @@ function constructEntryHTML(entry, i) {
               entry.name, '</div>'];
 
   if (entry.isFile) {
-    html.push('<a href="javascript:" data-preview onclick="readFile(', i, ')"><img src="images/icons/library.png" class="icon" title="Read file" alt="Read file"></a>');
+    html.push('<a href="javascript:" data-preview-link onclick="readFile(', i, ')"><img src="images/icons/library.png" class="icon" title="Read file" alt="Read file"></a>');
     html.push('<a href="', entry.toURL(), '" download><img src="images/icons/download.png" class="icon" title="Download" alt="Download"></a>');
   }
 
-  html.push('<a href="javascript:" onclick="remove(this,', i, ');"><img src="images/icons/trash_empty.png" class="icon" title="Remove" alt="Remove"></a>');
+  html.push('<a href="javascript:" data-remove-link onclick="remove(this,', i, ');"><img src="images/icons/trash_empty.png" class="icon" title="Remove" alt="Remove"></a>');
 
   return html.join('');
 }
@@ -261,10 +262,8 @@ function openFS() {
     setCwd(''); // Display current path as root.
 
     // Simulate click on this button to list the files.
-    var evt = document.createEvent('Event');
-    evt.initEvent('click', false, false);
+    click(openFsButton);
     openFsButton.textContent = 'Refresh folder';
-    openFsButton.dispatchEvent(evt);
   }, onError);
 }
 
