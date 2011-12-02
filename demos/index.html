@@ -23,6 +23,7 @@ Author: Eric Bidelman (ebidel@gmail.com)
 <title>HTML5 Filesystem Playground</title>
 <link rel="stylesheet" href="http://fonts.googleapis.com/css?family=Open+Sans" type="text/css" />
 <link rel="stylesheet" href="css/app.css" type="text/css" />
+<link rel="shortcut icon" href="images/icon/folder.png" />
 </head>
 <body>
 <section>
@@ -75,7 +76,9 @@ openFsButton.addEventListener('click', function(e) {
   if (filer && !filer.isOpen) {
     openFS();
   } else {
-    this.textContent = 'Refresh folder';
+    filer.ls('.', function(entries) {
+      renderEntries(entries);
+    }, onError);
   }
 }, false);
 
@@ -100,24 +103,64 @@ function toggleContentEditable(el) {
   }
 }
 
+var currentLi = 1;
+
 document.addEventListener('keydown', function(e) {
   var target = e.target;
-
-  if (e.keyCode == 27) { // ESC
-    filePreview.classList.remove('show');
-    filePreview.innerHTML = '';
-    e.preventDefault();
-    e.stopPropagation();
-  }
 
   // Prevent enter key from inserting carriage return in the contenteditable
   // file/folder renaming.
   if (target.isContentEditable && 'filename' in target.dataset) {
-    if (e.keyCode == 13) {
+    if (e.keyCode == 13) { // Enter
       e.preventDefault();
       e.stopPropagation();
       target.blur();
     }
+    return;
+  }
+
+  var active = document.querySelector('#files li.on');
+
+  if (e.keyCode == 27) { // ESC
+    filePreview.classList.remove('show');
+    filePreview.innerHTML = '';
+
+    if (active) {
+      active.classList.remove('on');
+    }
+
+    e.preventDefault();
+    e.stopPropagation();
+    return;
+  }
+
+  if (e.keyCode == 13) {  // Enter
+    if (active.querySelector('.folder')) {
+      currentLi = 1; // reset current active to first item in current folder.
+    }
+
+    var evt = document.createEvent('Event');
+    evt.initEvent('click', false, false);
+    active.querySelector('img').dispatchEvent(evt);
+
+    e.preventDefault();
+    return;
+  }
+
+  if (active) {
+    active.classList.remove('on');
+  }
+
+  var count = entries.length + 1;
+
+  if (e.keyCode == 39 || e.keyCode == 40) { // Right/down arrow.
+    currentLi = currentLi == count ? 1 : ++currentLi;
+    document.querySelector('#files li:nth-of-type(' + currentLi + ')').classList.toggle('on');
+    e.preventDefault();
+  } else if (e.keyCode == 37 || e.keyCode == 38) { // Left/up arrow.
+    currentLi = currentLi == 1 ? count : --currentLi;
+    document.querySelector('#files li:nth-of-type(' + currentLi + ')').classList.toggle('on');
+    e.preventDefault();
   }
 }, false);
 
@@ -155,7 +198,7 @@ function renderEntries(resultEntries) {
 
   var li = document.createElement('li');
   li.innerHTML = '<a href="javascript:" onclick="cd(-1)" class="parentDir">' + 
-      '<img src="images/icons/folder.png" class="folder">' + 
+      '<img src="images/icons/folder.png" class="folder" onclick="cd(-1)">' + 
       '[ parent directory ]</a>';
   fileList.appendChild(li);
 
@@ -183,6 +226,7 @@ function openFS() {
 
       var evt = document.createEvent('Event');
       evt.initEvent('click', false, false);
+      openFsButton.textContent = 'Refresh folder';
       openFsButton.dispatchEvent(evt);
     }, onError);
   }, onError);
