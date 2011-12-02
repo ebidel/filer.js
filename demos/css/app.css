@@ -78,7 +78,7 @@ button:not([disabled]):hover {
 button:not([disabled]):active {
   background: -webkit-linear-gradient(#E3E3E3 40%, #F9F9F9 70%);
 }
-button[disabled] {
+[disabled] {
   color: #ccc;
 }
 input[type='text'], textarea, iframe {
@@ -97,7 +97,6 @@ body > section:first-child {
   padding: 1em;
 }
 #files {
-  margin: 10px 10px 10px 0;
   float: left;
   clear: both;
   height: 400px;
@@ -113,6 +112,7 @@ body > section:first-child {
 }
 #files li {
   -webkit-transition: all 0.2s ease-out;
+  -webkit-column-break-inside: avoid;
   white-space: nowrap;
   padding: 10px;
   border-radius: 12px;
@@ -213,9 +213,7 @@ img.download {
 }
 #file-info img {
   max-height: 350px;
-
   border-radius: 5px;
-
   box-shadow: 0 0 15px #222;
 }
 #file-info iframe {
@@ -231,7 +229,7 @@ img.download {
   background: -webkit-linear-gradient(#fff 40%, #eee);
   top: 0;
   right: 0;
-  width: 350px;
+  width: 375px;
   height: 100%;
   overflow: auto;
   overflow-x: hidden;
@@ -261,7 +259,7 @@ img.download {
 #files.large {
   float: none;
   width: 100%;
-  height: auto;
+  /*height: auto;*/
 }
 #files.large ul {
   -webkit-column-count: 3;
@@ -270,7 +268,17 @@ img.download {
 #files.large li {
   padding-bottom: 10px;
 }
+#files.large li:first-child {
+  -webkit-column-span: all;
+}
+#files.large li .parentDir img {
+  height: 16px;
+  width: 16px;
+}
 #files.large li img {
   height: 50px;
   width: 50px;
+}
+#cwd {
+  width: 400px;
 }

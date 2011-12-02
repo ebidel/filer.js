@@ -23,7 +23,7 @@ Author: Eric Bidelman (ebidel@gmail.com)
 <title>HTML5 Filesystem Playground</title>
 <link rel="stylesheet" href="http://fonts.googleapis.com/css?family=Open+Sans" type="text/css" />
 <link rel="stylesheet" href="css/app.css" type="text/css" />
-<link rel="shortcut icon" href="images/icon/folder.png" />
+<link rel="shortcut icon" href="images/icons/folder.png" />
 </head>
 <body>
 <section>
@@ -32,15 +32,18 @@ Author: Eric Bidelman (ebidel@gmail.com)
     <button id="openFsButton">Open file system</button>
     <input type="text" id="dir-name" placeholder="directory name" value="myDir"/>
     <button onclick="mkdir(document.querySelector('#dir-name').value)">New directory</button>
-    <input type="text" id="file-name" placeholder="file name" value="newFile.wav"/>
+    <input type="text" id="file-name" placeholder="file name" value="test.txt"/>
     <button onclick="newFile(document.querySelector('#file-name').value)">New file</button>
     <!--progress id="progress" value="0" min="0" max="100"></progress>-->
     <input type="checkbox" onclick="document.querySelector('#log').classList.toggle('active')" id="toggle-log"><label for="toggle-log">Show log</label>
   </div>
-  <div style="font-size:small;display:inline-block">
-     Display as: <a href="javascript:" onclick="display(this, 'list')">list</a> | <a href="javascript:" onclick="display(this, 'large')">icons</a>
+  <div style="margin: 15px 0">
+    <div style="display:inline-block">
+      <span style="vertical-align: middle;">Display as: <a href="javascript:" onclick="display(this, 'list')">list</a> | <a href="javascript:" onclick="display(this, 'large')">icons</a></span>
+      <input type="text" id="cwd" disabled>
+    </div>
+    <div style="float:right">Double-click on a file/folder name to rename it.</div>
   </div>
-  <div style="float:right">Double-click on a file/folder name to rename it.</div>
   <div id="files" class="large"><ul></ul></div>
   <div id="file-info"></div>
 </section>
@@ -73,6 +76,7 @@ var fileList = filesContainer.querySelector('ul');
 var openFsButton = document.querySelector('#openFsButton');
 
 openFsButton.addEventListener('click', function(e) {
+  // Open the FS, otherwise list the files.
   if (filer && !filer.isOpen) {
     openFS();
   } else {
@@ -134,17 +138,25 @@ document.addEventListener('keydown', function(e) {
     return;
   }
 
-  if (e.keyCode == 13) {  // Enter
-    if (active.querySelector('.folder')) {
-      currentLi = 1; // reset current active to first item in current folder.
+  if (target.nodeName != 'INPUT') {
+    if (e.keyCode == 8) { // Backspace.
+
+      e.preventDefault();
+      return;
+    } else if (e.keyCode == 13) {  // Enter
+      if (active) {
+        if (active.querySelector('.folder')) {
+          currentLi = 1; // reset current active to first item in current folder.
+        }
+
+        var evt = document.createEvent('Event');
+        evt.initEvent('click', false, false);
+        active.querySelector('img').dispatchEvent(evt);
+
+        e.preventDefault();
+        return;
+      }
     }
-
-    var evt = document.createEvent('Event');
-    evt.initEvent('click', false, false);
-    active.querySelector('img').dispatchEvent(evt);
-
-    e.preventDefault();
-    return;
   }
 
   if (active) {
@@ -184,6 +196,12 @@ function constructEntryHTML(entry, i) {
 }
 
 function addEntryToList(entry, opt_idx) {
+
+  // If an index isn't passed, we're creating a dir or adding a file. Append it.
+  if (opt_idx == undefined) {
+    entries.push(entry);
+  }
+
   var idx = (opt_idx === undefined) ? entries.length - 1 : opt_idx;
 
   var li = document.createElement('li');
@@ -199,7 +217,7 @@ function renderEntries(resultEntries) {
   var li = document.createElement('li');
   li.innerHTML = '<a href="javascript:" onclick="cd(-1)" class="parentDir">' + 
       '<img src="images/icons/folder.png" class="folder" onclick="cd(-1)">' + 
-      '[ parent directory ]</a>';
+      ' [ parent directory ]</a>';
   fileList.appendChild(li);
 
   if (!resultEntries.length) {
@@ -219,17 +237,23 @@ function renderEntries(resultEntries) {
 
 function openFS() {
   filer.init({persistent: false, size: 1024 * 1024}, function(fs) {
-    logger.log(fs.root.toURL())
-    filer.ls('.', function(entries) {
-      renderEntries(entries);
-      logger.log('<p>Opened: ' + fs.name, + '</p>');
+    logger.log(fs.root.toURL());
+    logger.log('<p>Opened: ' + fs.name, + '</p>');
 
-      var evt = document.createEvent('Event');
-      evt.initEvent('click', false, false);
-      openFsButton.textContent = 'Refresh folder';
-      openFsButton.dispatchEvent(evt);
-    }, onError);
+    setCwd(''); // Display current path as root.
+
+    // Simulate click on this button to list the files.
+    var evt = document.createEvent('Event');
+    evt.initEvent('click', false, false);
+    openFsButton.textContent = 'Refresh folder';
+    openFsButton.dispatchEvent(evt);
   }, onError);
+}
+
+function setCwd(path) {
+  var prefix = filer.type == window.TEMPORARY ?  'temporary' : 'persistent';
+  path = path == '..' ? '' : path;
+  document.querySelector('#cwd').value = '/' + prefix + path;
 }
 
 function mkdir(name) {
@@ -248,6 +272,8 @@ function cd(i) {
   } else {
     var path = entries[i].fullPath;
   }
+
+  setCwd(path);
 
   filer.ls(path, renderEntries, onError);
 }
@@ -285,7 +311,10 @@ function rename(el, i) {
     entries[i] = entry;
 
     // Fill download link with updated filsystem URL.
-    el.parentElement.querySelector('[download]').href = entry.toURL();
+    var downloadLink = el.parentElement.querySelector('[download]');
+    if (downloadLink) {
+      downloadLink.href = entry.toURL();
+    }
   });
   toggleContentEditable(el);
 }
