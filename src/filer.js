@@ -245,7 +245,6 @@ var Filer = new function() {
         code: FileError.BROWSER_NOT_SUPPORTED,
         name: 'BROWSER_NOT_SUPPORTED'
       });
-      return;
     }
 
     initObj = !opt_initObj ? {} : opt_initObj; // Use defaults if obj is null.
