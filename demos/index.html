@@ -26,26 +26,48 @@ Author: Eric Bidelman (ebidel@gmail.com)
 <link rel="shortcut icon" href="images/icons/favicon.png" />
 </head>
 <body>
+
+<!--
+HTML5 tech used:
+- Filesystem API
+- DnD
+- <input type="file" webkitdirectory>
+- a[download] attribute
+- contenteditable
+- <audio> ( to play audio files )
+- Element.[dataset|classList], querySelector[All]()
+- CSS3: gradients, transforms, transitions, rounded corners, multiple bgs, webfonts,
+        text-overflow: ellipsis;, box shadow, text shadow, columns, -webkit-any(),
+        new flexbox, :not(), :empty, :disabled, styled scrollbars
+Other:
+- Chrome Frame
+-->
+
+<div id="container">
 <header>
-  <img src="images/icons/favicon.png">
+  <img src="images/icons/favicon.png" alt="HTML5 Filesystem Playground" title="HTML5 Filesystem Playground">
   <h1>HTML5 <a href="http://www.html5rocks.com/tutorials/file/filesystem/" target="_blank">Filesystem</a> Playground</h1>
-  <div>
-    <button id="openFsButton">Open file system</button>
+  <div style="width:-webkit-flex(50%);text-align:right;">
+    <button id="openFsButton" onclick="refreshFolder()" alt="Refresh view" title="Refresh view">Open file system</button>
+    <input type="file" class="button" webkitdirectory disabled alt="Import files into this app" title="Import files into this app">
     <input type="text" id="dir-name" placeholder="directory name" value="myDir"/>
-    <button onclick="mkdir(document.querySelector('#dir-name').value)">New directory</button>
+    <button onclick="mkdir(document.querySelector('#dir-name').value)">Create</button>
     <input type="text" id="file-name" placeholder="file name" value="test.txt"/>
-    <button onclick="newFile(document.querySelector('#file-name').value)">New file</button>
+    <button onclick="newFile(document.querySelector('#file-name').value)">Create</button>
     <!--progress id="progress" value="0" min="0" max="100"></progress>-->
   </div>
 </header>
 <section>
+  <div id="errors" class="error"></div>
   <div style="display:-webkit-flexbox;margin: 25px 0 15px 0;">
     <div>
-      <input type="text" id="cwd" disabled>
+      <input type="text" id="cwd" disabled alt="Current directory path" title="Current directory path">
       <span style="margin-right: 10px">Display as: <a href="javascript:" onclick="display(this, 'list')">list</a> | <a href="javascript:" onclick="display(this, 'large')">icons</a></span>
       <span><input type="checkbox" onclick="toggleLog()" id="toggle-log"><label for="toggle-log">Show log</label></span>
     </div>
-    <div style="width: -webkit-flex(50%);text-align:right;">Double-click on a file/folder name to rename it.</div>
+    <div style="width: -webkit-flex(50%);text-align:right;">
+      Drag in files from the desktop to import them.
+    </div>
   </div>
   <div id="files" class="large"><ul></ul></div>
   <div id="file-info"></div>
@@ -56,7 +78,7 @@ Author: Eric Bidelman (ebidel@gmail.com)
     <div></div>
   </div>
 </section>
-
+</div>
 <script src="js/logger.js"></script>
 <script src="js/dnd.js"></script>
 <script src="../src/filer.min.js"></script>
@@ -77,8 +99,16 @@ var filePreview = document.querySelector('#file-info');
 var filesContainer = document.querySelector('#files');
 var fileList = filesContainer.querySelector('ul');
 var openFsButton = document.querySelector('#openFsButton');
+var errors = document.querySelector('#errors');
 
-openFsButton.addEventListener('click', function(e) {
+function onError(e) {
+  logger.log('<p class="error">' + e.name + '</p>');
+  errors.textContent = e.name;
+}
+
+function refreshFolder(e) {
+  errors.textContent = ''; // Reset errors.
+
   // Open the FS, otherwise list the files.
   if (filer && !filer.isOpen) {
     openFS();
@@ -87,12 +117,7 @@ openFsButton.addEventListener('click', function(e) {
       renderEntries(entries);
     }, onError);
   }
-}, false);
-
-function onError(e) {
-  logger.log('<p class="error">' + e.name + '</p>');
 }
-
 function display(el, type) {
   if (type == 'list') {
     filesContainer.classList.remove('large');
@@ -202,11 +227,11 @@ function constructEntryHTML(entry, i) {
       '<img src="images/icons/folder.png" class="folder" onclick="cd(' + i + ')" title="Open folder" alt="Open folder">' :
       '<img src="images/icons/file.png" class="file" onclick="openFile(' + i + ')" title="Open file" alt="Open file">';
 
-  var html = [img, '<div data-filename ondblclick="toggleContentEditable(this)" onblur="rename(this, ', i, ')">',
+  var html = [img, '<div data-filename ondblclick="toggleContentEditable(this)" onblur="rename(this, ', i, ')" title="Double-click to rename this entry">',
               entry.name, '</div>'];
 
   if (entry.isFile) {
-    html.push('<a href="javascript:" data-preview-link onclick="readFile(', i, ')"><img src="images/icons/library.png" class="icon" title="Read file" alt="Read file"></a>');
+    html.push('<a href="javascript:" data-preview-link onclick="readFile(', i, ')"><img src="images/icons/library.png" class="icon" title="Preview file" alt="Preview file"></a>');
     html.push('<a href="', entry.toURL(), '" download><img src="images/icons/download.png" class="icon" title="Download" alt="Download"></a>');
   }
 
@@ -249,7 +274,7 @@ function renderEntries(resultEntries) {
 
   resultEntries.forEach(function(entry, i) {
     /*entry.getMetadata(function(e) {
-    console.log(e)
+      console.log(e)
     }, onError);*/
     addEntryToList(entry, i);
   });
@@ -261,10 +286,10 @@ function openFS() {
     logger.log('<p>Opened: ' + fs.name, + '</p>');
 
     setCwd(''); // Display current path as root.
-
-    // Simulate click on this button to list the files.
-    click(openFsButton);
-    openFsButton.textContent = 'Refresh folder';
+    refreshFolder();
+    openFsButton.innerHTML = '<div></div>';
+    openFsButton.classList.add('fakebutton');
+    document.querySelector('[type="file"]').disabled = false;
   }, onError);
 }
 
@@ -277,6 +302,8 @@ function setCwd(path) {
 function mkdir(name) {
   if (!name) return;
 
+  errors.textContent = ''; // Reset errors.
+
   try {
     filer.mkdir(name, true, addEntryToList, onError);
   } catch(e) {
@@ -285,6 +312,8 @@ function mkdir(name) {
 }
 
 function cd(i) {
+  errors.textContent = ''; // Reset errors.
+
   if (i == -1) {
     var path = '..';
   } else {
@@ -297,21 +326,26 @@ function cd(i) {
 }
 
 function openFile(i) {
+  errors.textContent = ''; // Reset errors.
   filer.open(entries[i].name);
 }
 
 function newFile(name) {
   if (!name) return;
 
+  errors.textContent = ''; // Reset errors.
+
   try {
     filer.create(name, true, addEntryToList, onError);
   } catch(e) {
-    logger.log('<p class="error">' + e + '</p>');
+    onError(e);
   }
 }
 
 function writeFile(file) {
   if (!file) return;
+
+  errors.textContent = ''; // Reset errors.
 
   filer.write(file.name, {data: file, type: file.type},
     function(fileEntry, fileWriter) {
@@ -324,6 +358,8 @@ function writeFile(file) {
 }
 
 function rename(el, i) {
+  errors.textContent = ''; // Reset errors.
+
   filer.rename(entries[i], el.textContent, function(entry) {
     logger.log('<p>' + entries[i].name + ' renamed to ' + entry.name + '</p>');
     entries[i] = entry;
@@ -338,6 +374,8 @@ function rename(el, i) {
 }
 
 function remove(link, i) {
+  errors.textContent = ''; // Reset errors.
+
   var entry = entries[i];
 
   if (!confirm('Delete ' + entry.name + '?')) {
@@ -355,6 +393,8 @@ function remove(link, i) {
 }
 
 function copy(el, i) {
+  errors.textContent = ''; // Reset errors.
+
   filer.cp(entries[i], el.textContent, function(entry) {
     logger.log('<p>' + entries[i].name + ' renamed to ' + entry.name + '</p>');
     entries[i] = entry;
@@ -363,6 +403,8 @@ function copy(el, i) {
 }
 
 function readFile(i) {
+  errors.textContent = ''; // Reset errors.
+
   var entry = entries[i];
 
   try {

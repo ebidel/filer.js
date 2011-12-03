@@ -39,9 +39,10 @@ html, body {
 }
 body {
   background: -webkit-radial-gradient(center center, #fff, #eee) no-repeat;
-  /*background: url('bg-rep.png');*/
   color: #222;
   overflow-x: hidden;
+  -webkit-transition: -webkit-transform 300ms ease-in-out;
+  -webkit-transform-origin: 50% 100%;
 }
 label {
   cursor: pointer;
@@ -71,20 +72,35 @@ li {
   padding-bottom: 2px;
 }
 .dropping {
+  -webkit-transform: scale(0.9);
   background-image: -webkit-gradient(
     linear, left bottom, left top,
     color-stop(0.13, rgb(209,144,23)),
     color-stop(0.57, rgb(251,173,51)),
     color-stop(0.79, rgb(255,208,77))
   );
-  background-image: -moz-linear-gradient(
-    center bottom,
-    rgb(209,144,23) 13%,
-    rgb(251,173,51) 57%,
-    rgb(255,208,77) 79%
-  )
 }
-button {
+.dropping #container {
+  background: white;
+  border-radius: 10px;
+  opacity: 0.8;
+}
+.fakebutton {
+  text-align: center;
+  line-height: 0;
+  display: inline-block;
+}
+.fakebutton > div {
+  width: 15px;
+  height: 15px;
+  display: inline-block;
+  background: url(../images/icons/sprite_black.png) -65px -23px no-repeat;
+}
+.button {
+  margin: 0 8px 0 0;
+}
+:-webkit-any(button, .fakebutton),
+input[type="file"].button:before {
   background: -webkit-linear-gradient(#F9F9F9 40%, #E3E3E3 70%);
   border: 1px solid #888;
   border-radius: 3px;
@@ -97,14 +113,35 @@ button {
   -webkit-user-select:none;
   user-select: none;
   cursor: pointer;
+  text-shadow: 1px 1px #fff;
+  font-weight: 700;
 }
-button:not(:disabled):hover {
+:-webkit-any(button, .fakebutton):not(:disabled):hover,
+input[type="file"].button:not(:disabled):hover:before {
   border: 1px solid #000;
 }
-button:not(:disabled):active {
+:-webkit-any(button, .fakebutton):not(:disabled):active,
+input[type="file"].button:not(:disabled):active:before {
   background: -webkit-linear-gradient(#E3E3E3 40%, #F9F9F9 70%);
 }
-[disabled] {
+input[type="file"].button {
+  width: 112px;
+  white-space: nowrap;
+}
+input[type="file"].button::-webkit-file-upload-button {
+  visibility: hidden;
+}
+input[type="file"].button:before {
+  content: 'Import directory';
+  display: inline-block;
+  outline: none;
+  white-space: nowrap;
+  -webkit-user-select: none;
+  user-select: none;
+  cursor: pointer;
+}
+:disabled,
+input[type="file"].button:disabled:before {
   color: #ccc;
 }
 input[type='text'], textarea, iframe {
@@ -119,30 +156,30 @@ input[type='text'], textarea, iframe {
 input {
   vertical-align: middle;
 }
-body > * {
+body #container {
   padding: 1em;
 }
-body > section:first-of-type {
-  padding-top: 0;
-}
+
 header {
-  /*display: -webkit-box;
-  -webkit-box-align: center;*/
+  padding: 2px 0;
   display: -webkit-flexbox;
+  border-radius: 5px;
   box-shadow: 0 5px 5px #ccc;
   background: white;
   background: rgb(207,231,250);
   background: -webkit-linear-gradient(top, rgba(207,231,250,1) 0%, rgba(99,147,193,1) 100%);
 }
+header > * {
+  -webkit-flex-align: center;
+}
 header img {
-  height: 35px;
-  width: 35px;
-  vertical-align: middle;
-  margin: -6px 5px 0 0;
+  height: 45px;
+  width: 45px;
+  margin: -15px 7px 0 7px;
 }
 header h1 {
   font-family: 'Open Sans';
-  font-size: 20px;
+  font-size: 21px;
   text-shadow: 0px -1px black;
   margin: 0 1em 0 0;
   color: white;
@@ -158,7 +195,7 @@ header h1 a {
   overflow-y: auto;
   overflow-x: hidden;
   border: 1px solid #eee;
-  border-radius: 10px;
+  border-radius: 7px;
   box-shadow: 0 -2px 3px #ddd inset, 0 2px 3px #ddd inset;
   padding: 10px;
   background: -webkit-linear-gradient(#fff 80%, #eee);
@@ -249,7 +286,7 @@ img.download {
   -webkit-box-orient: vertical;
   -webkit-box-pack: center;
 }
-#file-info >  div,
+#file-info > div,
 #file-info p {
   padding: 10px;
   background: #fff;
@@ -273,6 +310,16 @@ img.download {
 #file-info iframe {
   width: 500px;
   height: 300px;
+}
+#errors:not(:empty) {
+  margin: 15px 0 -15px 0;
+  text-align: center;
+}
+#errors::before {
+  content: '';
+}
+.error {
+  color: red !important;
 }
 .error::before {
   content: 'Error: ';
@@ -306,10 +353,6 @@ img.download {
   color: navy;
   margin: 3px 0;
 }
-#log .error {
-  color: red;
-}
-
 #files.large {
   float: none;
   width: 100%;
@@ -335,4 +378,6 @@ img.download {
 }
 #cwd {
   width: 300px;
+  -webkit-user-select:none;
+  user-select: none;
 }
