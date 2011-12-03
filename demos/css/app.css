@@ -35,6 +35,7 @@ html, body {
   margin: 0;
   height: 100%;
   width: 100%;
+  overflow: hidden;
 }
 body {
   background: -webkit-radial-gradient(center center, #fff, #eee) no-repeat;
@@ -132,6 +133,12 @@ header {
   background: white;
   background: rgb(207,231,250);
   background: -webkit-linear-gradient(top, rgba(207,231,250,1) 0%, rgba(99,147,193,1) 100%);
+}
+header img {
+  height: 35px;
+  width: 35px;
+  vertical-align: middle;
+  margin: -6px 5px 0 0;
 }
 header h1 {
   font-family: 'Open Sans';

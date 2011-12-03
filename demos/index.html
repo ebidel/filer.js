@@ -27,6 +27,7 @@ Author: Eric Bidelman (ebidel@gmail.com)
 </head>
 <body>
 <header>
+  <img src="images/icons/favicon.png">
   <h1>HTML5 <a href="http://www.html5rocks.com/tutorials/file/filesystem/" target="_blank">Filesystem</a> Playground</h1>
   <div>
     <button id="openFsButton">Open file system</button>
@@ -35,16 +36,16 @@ Author: Eric Bidelman (ebidel@gmail.com)
     <input type="text" id="file-name" placeholder="file name" value="test.txt"/>
     <button onclick="newFile(document.querySelector('#file-name').value)">New file</button>
     <!--progress id="progress" value="0" min="0" max="100"></progress>-->
-    <input type="checkbox" onclick="toggleLog()" id="toggle-log"><label for="toggle-log">Show log</label>
   </div>
 </header>
 <section>
-  <div style="margin: 25px 0 15px 0;">
-    <div style="display:inline-block">
+  <div style="display:-webkit-flexbox;margin: 25px 0 15px 0;">
+    <div>
       <input type="text" id="cwd" disabled>
-      <span style="vertical-align: middle;">Display as: <a href="javascript:" onclick="display(this, 'list')">list</a> | <a href="javascript:" onclick="display(this, 'large')">icons</a></span>
+      <span style="margin-right: 10px">Display as: <a href="javascript:" onclick="display(this, 'list')">list</a> | <a href="javascript:" onclick="display(this, 'large')">icons</a></span>
+      <span><input type="checkbox" onclick="toggleLog()" id="toggle-log"><label for="toggle-log">Show log</label></span>
     </div>
-    <div style="float:right">Double-click on a file/folder name to rename it.</div>
+    <div style="width: -webkit-flex(50%);text-align:right;">Double-click on a file/folder name to rename it.</div>
   </div>
   <div id="files" class="large"><ul></ul></div>
   <div id="file-info"></div>
