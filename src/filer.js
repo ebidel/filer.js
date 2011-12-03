@@ -393,7 +393,7 @@ var Filer = new function() {
    * Creates an empty file.
    *
    * @param {string} path The relative path of the file to create, from the
-   *     current workind directory.
+   *     current working directory.
    * @param {bool=} opt_exclusive True (default) if an error should be thrown if
    *     the file already exists.
    * @param {Function} successCallback A success callback, which is passed

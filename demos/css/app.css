@@ -168,6 +168,8 @@ header {
   background: white;
   background: rgb(207,231,250);
   background: -webkit-linear-gradient(top, rgba(207,231,250,1) 0%, rgba(99,147,193,1) 100%);
+  -webkit-user-select:none;
+  user-select: none;
 }
 header > * {
   -webkit-flex-align: center;
