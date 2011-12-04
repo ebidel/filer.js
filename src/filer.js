@@ -141,6 +141,7 @@ var Filer = new function() {
 
   const FS_INIT_ERROR_MSG = 'Filesystem has not been initialized.';
   const NOT_IMPLEMENTED_MSG = 'Not implemented.';
+  const NOT_A_DIRECTORY = 'Path was not a directory.';
   const FS_URL_SCHEME = 'filesystem:';
   const DEFAULT_FS_SIZE = 1024 * 1024; // 1MB.
 
@@ -153,9 +154,17 @@ var Filer = new function() {
     return path.indexOf(FS_URL_SCHEME) == 0;
   };
 
-  var pathToFsURL_ = function(cwd, path) {
+  // Path can be relative or absolute. If relative, it's taken from the cwd_.
+  var pathToFsURL_ = function(path) {
     if (!isFsURL_(path)) {
-      path = (path[0] != '/') ? cwd.toURL() + '/' + path : baseFsUrl_ + path;
+      //path = (path[0] != '/') ? cwd.toURL() + '/' + path : baseFsUrl_ + path;
+      if (path[0] == '/') {
+        path = baseFsUrl_ + path; //cwd_.toURL() + path.substring(1);
+      } else if (path.indexOf('./') == 0 || path.indexOf('../') == 0) {
+        path = cwd_.toURL() + '/' + path;
+      } else {
+        path = cwd_.toURL() + path;
+      }
     }
     return path;
   };
@@ -188,10 +197,10 @@ var Filer = new function() {
     };
 
     // Build a filesystem: URL manually if we need to.
-    var src = pathToFsURL_(cwd_, srcStr);
+    var src = pathToFsURL_(srcStr);
 
     if (arguments.length == 3) {
-      var dest = pathToFsURL_(cwd_, destStr);
+      var dest = pathToFsURL_(destStr);
 
       self.resolveLocalFileSystemURL(src, function(srcEntry) {
         self.resolveLocalFileSystemURL(dest, function(destEntry) {
@@ -320,7 +329,6 @@ var Filer = new function() {
       // We were passed a path. Look up DirectoryEntry and proceeed.
       cwd_.getDirectory(dirEntryOrPath, {}, callback, opt_errorHandler);
     }
-    
   };
 
   /**
@@ -482,18 +490,33 @@ var Filer = new function() {
   /**
    * Changes the current working directory.
    *
-   * @param {Function} successCallback Success callback, which is passed
-   *     the DirectoryEntry of the new current directory.
+   * @param {string|DirectoryEntry} dirEntryOrPath A path relative to the
+   *     current working directory to move into or a DirectoryEntry.
+   * @param {Function=} opt_successCallback Optional success callback, which is
+   *     passed the DirectoryEntry of the new current directory.
    * @param {Function=} opt_errorHandler Optional error callback.
    */
-  Filer.prototype.cd = function(successCallback, opt_errorHandler) {
+  Filer.prototype.cd = function(dirEntryOrPath, opt_successCallback,
+                                opt_errorHandler) {
     if (!fs_) {
      throw new Error(FS_INIT_ERROR_MSG);
     }
 
-    throw new Error(NOT_IMPLEMENTED_MSG);
-    // TODO: Implement me. Change cwd_ = fs_.root;
-  }
+    if (dirEntryOrPath.isDirectory) {
+      cwd_ = dirEntryOrPath;
+      opt_successCallback && opt_successCallback(cwd_);
+    } else {
+      self.resolveLocalFileSystemURL(pathToFsURL_(dirEntryOrPath), function(dirEntry) {
+        if (dirEntry.isDirectory) {
+          cwd_ = dirEntry;
+          opt_successCallback && opt_successCallback(cwd_);
+        } else {
+          //opt_onError && opt_onError(e);
+          throw new Error(NOT_A_DIRECTORY);
+        }
+      }, opt_errorHandler);
+    }
+  };
 
   /**
     * Copies a file or entire directory.
