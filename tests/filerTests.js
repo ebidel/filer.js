@@ -12,6 +12,7 @@ test("expect in test", 3, function() {
 
 function onError(e) {
   ok(false, 'unexpected error' + e.toString());
+  start();
 };
 
 module('init()', {
@@ -238,12 +239,53 @@ test('ls()', 6, function() {
   var filer2 = new Filer();
   try {
     stop();
-    filer2.ls('.', function(entries) {}, onError);
+    filer2.ls('.', function(entries) {
+      start();
+    }, onError);
   } catch (e) {
     ok(true, 'Attempted to use this method before calling init()');
     start();
   }*/
 
+});
+
+
+test('cd()', 5, function() {
+  var filer = this.filer;
+  var folderName = 'filer_test_case_folder';
+
+  stop();
+  filer.cd('.', function(dirEntry) {
+    ok(dirEntry.isDirectory, 'cd folder is a DirectoryEntry');
+    start();
+  }, onError);
+
+  stop();
+  filer.mkdir(folderName, false, function(dirEntry) {
+    filer.cd(folderName, function(dirEntry) {
+      ok(true, 'cd with path name as an argument.');
+      start();
+    }, onError);
+  });
+
+  stop();
+  filer.mkdir(folderName, false, function(dirEntry) {
+    filer.cd('/' + folderName, function(dirEntry) {
+      ok(true, 'cd with abspath name as an argument.');
+      start();
+    }, onError);
+  });
+
+  stop();
+  filer.mkdir(folderName, false, function(dirEntry) {
+    filer.cd(dirEntry, function(dirEntry) {
+      ok(true, 'cd with DirectoryEntry as an argument.');
+      filer.ls('.', function(entries) {
+        equals(entries.length, 0, 'Empty directory');
+        start();
+      }, onError);
+    }, onError);
+  });
 });
 
 /*
