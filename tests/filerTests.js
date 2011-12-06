@@ -66,7 +66,6 @@ test('default arguments', 6, function() {
     ok('null used as first arg to init()');
     start();
   }, onError);
-
 });
 
 test('set size', 2, function() {
@@ -166,42 +165,6 @@ test('mkdir()', 5, function() {
   }
 });
 
-test('ls()', 5, function() {
-  var filer = this.filer;
-
-  ok(filer.isOpen, 'FS opened');
-  ok(self.TEMPORARY == filer.type, 'TEMPORARY storage used');
-
-  stop();
-  filer.ls('.', function(entries) {
-    ok(entries.slice, 'returned entries is an array') // Verify we got an Array.
-    filer.ls('/', function(entries2) {
-      equals(entries.length, entries2.length, 'Num root entries matches');
-      start();
-    }, onError);
-  }, onError);
-
-  stop();
-  filer.ls('/myfolderthatdoesntexist' + Date.now(), function(entries) {
-    ok(false);
-    start();
-  }, function(e) {
-    ok(true, "Path doesn't exist");
-    start();
-  });
-
-  /*// Try to create a folder without first calling init().
-  var filer2 = new Filer();
-  try {
-    stop();
-    filer2.ls('.', function(entries) {}, onError);
-  } catch (e) {
-    ok(true, 'Attempted to use this method before calling init()');
-    start();
-  }*/
-
-});
-
 test('ls()', 6, function() {
   var filer = this.filer;
 
@@ -286,6 +249,14 @@ test('cd()', 5, function() {
       }, onError);
     }, onError);
   });
+
+  // TODO: test optional callback args to cd().
+});
+
+test('create()', 0, function() {
+  var filer = this.filer;
+
+  // TODO
 });
 
 /*
