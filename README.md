@@ -41,17 +41,72 @@ The success callback is passed a `LocalFileSystem` object. If you don't initiali
 filer.init({}, function(fs) {
   ...
 }, onError);
+
+filer.init(); // All parameters are optional.
+```
+
+**Error handling**
+
+Many methods take an optional error callback as their last argument. It can be a good idea to setup a global error handler for all methods to use:
+
+```javascript
+function onError(e) {
+  console.log('Error' + e.name);
+}
 ```
 
 Examples
 ============
 
-To list the files in the current directory:
+ls()
+-----
+
+`ls()` lists the files in the directory you pass it. The first arg is a path to a directory:
 
 ```javascript
 filer.ls('.', function(entries) {
-  // entries
+  // entries in the current working directory.
 }, onError);
 ```
 
-TODO
+```javascript
+filer.ls('path/to/some/dir/', function(entries) {
+  // entries in "path/to/some/dir/"
+}, onError);
+```
+
+For versatility, the library accepts paths to files and directories as string values or as `FileEntry`/`DirectoryEntry` objects. For example, you can pass a `DirectorEntry` to `ls()`:
+
+```javascript
+filer.ls(filer.fs.root, function(entries) {
+  // entries in the root directory.
+}, onError);
+```
+
+which equivalent to:
+
+```javascript
+filer.ls('/', function(entries) {
+  // entries in the root directory.
+}, onError);
+```
+
+cd()
+-----
+
+`cd()` allows you to change into another directory. Future operations will become relative to the new directory:
+
+```javascript
+// Passing a path.
+filer.cd('/path/to/folder', function(dirEntry) {
+  ...
+}, onError);
+
+// Passing a DirectoryEntry.
+filer.cd(dirEntry, function(dirEntry2) {
+  // dirEntry == dirEntry2
+}, onError);
+
+filer.cd('/path/to/folder'); // Both callbacks are optional.
+```
+
