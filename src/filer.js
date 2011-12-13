@@ -354,15 +354,21 @@ var Filer = new function() {
         if (dirEntry.isDirectory) {
           successCallback(dirEntry);
         } else {
-          throw new Error(name + ' is not a directory');
+          var e  = new Error(name + ' is not a directory');
+          if (opt_errorHandler) {
+            opt_errorHandler(e);
+          } else {
+            throw e;
+          }
         }
       },
       function(e) {
         if (e.code == FileError.INVALID_MODIFICATION_ERR) {
+          var e = new Error("'" + name + "' already exists");
           if (opt_errorHandler) {
             opt_errorHandler(e);
           } else {
-            throw new Error("'" + name + "' already exists");   
+            throw e;
           }
         }
       }
@@ -419,8 +425,12 @@ var Filer = new function() {
     cwd_.getFile(path, {create: true,  exclusive: exclusive}, successCallback,
       function(e) {
         if (e.code == FileError.INVALID_MODIFICATION_ERR) {
-          opt_errorHandler && opt_errorHandler(e);
-          throw new Error("'" + path + "' already exists");
+          e = new Error("'" + path + "' already exists");
+        }
+        if (opt_errorHandler) {
+          opt_errorHandler(e);
+        } else {
+          throw e;
         }
       }
     );
@@ -446,11 +456,15 @@ var Filer = new function() {
     // Intermmediate error handler. Calls the user's error callback if present.
     var errorHandler = function(e, opt_onError) {
       if (e.code == FileError.NOT_FOUND_ERR) {
-         throw new Error('"' + entry + '" does not exist.');
+         e = new Error('"' + entry + '" does not exist.');
        } else if (e.code == FileError.INVALID_MODIFICATION_ERR) {
-         throw new Error('"' + newName + '" already exists.');
+         e = new Error('"' + newName + '" already exists.');
        }
-       opt_onError && opt_onError(e);
+       if (opt_onError) {
+         opt_onError(e);
+       } else {
+         throw e;
+       }
     };
 
     if (entry.isFile || entry.isDirectory) {
@@ -511,8 +525,12 @@ var Filer = new function() {
           cwd_ = dirEntry;
           opt_successCallback && opt_successCallback(cwd_);
         } else {
-          //opt_onError && opt_onError(e);
-          throw new Error(NOT_A_DIRECTORY);
+          var e = new Error(NOT_A_DIRECTORY);
+          if (opt_errorHandler) {
+            opt_errorHandler(e);
+          } else {
+            throw e;
+          }
         }
       }, opt_errorHandler);
     }
@@ -543,7 +561,12 @@ var Filer = new function() {
     } else {
       getEntry_(function(srcEntry, destDir) {
         if (!destDir.isDirectory) {
-          throw new Error('Oops! "' + destDir.name + ' is not a directory!');
+          var e = new Error('Oops! "' + destDir.name + ' is not a directory!')
+          if (opt_errorHandler) {
+            opt_errorHandler(e);
+          } else {
+            throw e;
+          }
         }
         srcEntry.copyTo(destDir, newName, opt_successCallback,
                         opt_errorHandler);
