@@ -24,7 +24,7 @@ module('init()', {
     this.filer = new Filer();
   },
   teardown: function() {
-    
+
   }
 });
 
@@ -121,24 +121,28 @@ test('storage type', 4, function() {
 module('methods', {
   setup: function() {
     this.filer = new Filer();
+    this.FOLDER_NAME = 'filer_test_case_folder';
+    this.FILE_NAME = 'filer_test_case.filer_test_case';
     stop();
     this.filer.init({}, function(fs) {
       start();
     }, onError);
   },
   teardown: function() {
-    
+    /*stop();
+    this.filer.rm(this.FOLDER_NAME, function() {
+      //start();
+    }, onError);*/
   }
 });
 
 test('mkdir()', 5, function() {
   var filer = this.filer;
-  var folderName = 'filer_test_case_folder';
+  var folderName = this.FOLDER_NAME;
 
   ok(filer.isOpen, 'FS opened');
 
   stop();
-  // TODO: clean up this folder after done.
   filer.mkdir(folderName, false, function(entry) {
     ok(entry.isDirectory, 'created folder is a DirectoryEntry');
     equals(entry.name, folderName, 'created folder is named "' + folderName + '"');
@@ -163,6 +167,8 @@ test('mkdir()', 5, function() {
     ok(true, 'Attempt to use this method before calling init()');
     start();
   }
+
+  // TODO: cleanup for this test, although it is done later.
 });
 
 test('ls()', 6, function() {
@@ -215,7 +221,7 @@ test('ls()', 6, function() {
 
 test('cd()', 5, function() {
   var filer = this.filer;
-  var folderName = 'filer_test_case_folder';
+  var folderName = this.FOLDER_NAME;
 
   stop();
   filer.cd('.', function(dirEntry) {
@@ -250,39 +256,76 @@ test('cd()', 5, function() {
     }, onError);
   });
 
+  // Clean up.
+  stop();
+  filer.rm(folderName, function() {
+    start();
+  }, onError);
+
   // TODO: test optional callback args to cd().
 });
 
-test('create()', 0, function() {
+test('create()', 3, function() {
   var filer = this.filer;
+  var fileName = this.FILE_NAME;
 
-  // TODO
+  stop();
+  filer.create(fileName, false, function(entry) {
+    ok(entry.isFile, 'created folder is a FileEntry');
+    equals(entry.name, fileName, 'created file named "' + fileName + '"');
+    start();
+  }, onError);
+
+  stop();
+  filer.create(fileName, true, function(entry) {
+    ok(false);
+    start();
+  }, function(e) {
+    ok(true, "Attempted to create a file that already exists");
+    start();
+  });
+
+  // Clean up.
+  stop();
+  filer.rm(fileName, function() {
+    start();
+  }, onError);
+});
+
+test('rm()', 3, function() {
+  var filer = this.filer;
+  var fileName = this.FILE_NAME;
+
+  stop();
+  filer.create(fileName, false, function(entry) {
+    filer.rm(fileName, function() {
+      ok(true, fileName + ' removed by path.')
+      start();
+    }, onError);
+  }, onError);
+
+  stop();
+  var fileName2 = fileName + '2';
+  filer.create(fileName2, false, function(entry) {
+    filer.rm(entry, function() {
+      ok(true, fileName2 + ' removed by entry.')
+      start();
+    }, onError);
+  }, onError);
+
+  stop();
+  var fileName3 = fileName + '3';
+  filer.create(fileName3, false, function(entry) {
+    var fsURL = filer.pathToFilesystemURL(entry.fullPath);
+    filer.rm(fsURL, function() {
+      ok(true, fileName3 + ' removed by filesystem URL.')
+      start();
+    }, onError);
+  }, onError);
 });
 
 /*
-(function() {
-  var reset = QUnit.reset;
-  function afterTest() {
-    ok( false, "reset should not modify test status" );
-  }
-  module("reset");
-  test("reset runs assertions", function() {
-    QUnit.reset = function() {
-      afterTest();
-      reset.apply( this, arguments );
-    };
-  });
-  test("reset runs assertions2", function() {
-    QUnit.reset = reset;
-  });
-})();
+test('rename()', 1, function() {
 
-module("noglobals", {
-  teardown: function() {
-    delete window.badGlobalVariableIntroducedInTest;
-  }
 });
-test("let teardown clean up globals", function() {
-  // this test will always pass if run without ?noglobals=true
-  window.badGlobalVariableIntroducedInTest = true;
-});*/
+*/

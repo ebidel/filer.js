@@ -155,11 +155,11 @@ var Filer = new function() {
   };
 
   // Path can be relative or absolute. If relative, it's taken from the cwd_.
+  // If a filesystem URL is passed it, it is simple returned
   var pathToFsURL_ = function(path) {
     if (!isFsURL_(path)) {
-      //path = (path[0] != '/') ? cwd.toURL() + '/' + path : baseFsUrl_ + path;
       if (path[0] == '/') {
-        path = baseFsUrl_ + path; //cwd_.toURL() + path.substring(1);
+        path = baseFsUrl_ + path.substring(1);
       } else if (path.indexOf('./') == 0 || path.indexOf('../') == 0) {
         path = cwd_.toURL() + '/' + path;
       } else {
@@ -232,6 +232,18 @@ var Filer = new function() {
     get isOpen() {
       return isOpen_;
     }
+  }
+
+  /**
+   * Constructs and returns a filesystem: URL given a path.
+   *
+   * @param {strng=} path The path to construct a URL for.
+   *     size {int=} The storage size (in bytes) to open the filesystem with.
+   *         Defaults to DEFAULT_FS_SIZE.
+   * @return {string} The filesystem: URL.
+   */
+  Filer.prototype.pathToFilesystemURL = function(path) {
+    return pathToFsURL_(path);
   }
 
   /**
@@ -364,7 +376,7 @@ var Filer = new function() {
       },
       function(e) {
         if (e.code == FileError.INVALID_MODIFICATION_ERR) {
-          var e = new Error("'" + name + "' already exists");
+          e.message = "'" + name + "' already exists";
           if (opt_errorHandler) {
             opt_errorHandler(e);
           } else {
@@ -425,7 +437,7 @@ var Filer = new function() {
     cwd_.getFile(path, {create: true,  exclusive: exclusive}, successCallback,
       function(e) {
         if (e.code == FileError.INVALID_MODIFICATION_ERR) {
-          e = new Error("'" + path + "' already exists");
+          e.message = "'" + path + "' already exists";
         }
         if (opt_errorHandler) {
           opt_errorHandler(e);
@@ -439,26 +451,27 @@ var Filer = new function() {
   /**
    * Renames a file or directory in the filesystem.
    *
-   * @param {FileEntry|DirectoryEntry|string} entry The file or directory to
-   *     rename. If a string, a filesystem URL or a path is accepted.
+   * @param {string|FileEntry|DirectoryEntry} entryOrPath A path to a file or
+   *     directory to, or the entry themselves. If a string, a filesystem URL or
+   *     a path is accepted.
    * @param {string} newName The name to rename the entry with.
    * @param {Function=} opt_successCallback An optional success callback, passed
    *     the updated entry.
    * @param {Function=} opt_errorHandler Optional error callback.
    */
-  Filer.prototype.rename = function(entry, newName, opt_successCallback,
+  Filer.prototype.rename = function(entryOrPath, newName, opt_successCallback,
                                     opt_errorHandler) {
     // Prevent error of renaming file to same name.
-    if (entry.name == newName || entry == newName) {
+    if (entryOrPath.name == newName || entryOrPath == newName) {
       return;
     }
 
     // Intermmediate error handler. Calls the user's error callback if present.
     var errorHandler = function(e, opt_onError) {
       if (e.code == FileError.NOT_FOUND_ERR) {
-         e = new Error('"' + entry + '" does not exist.');
+         e.message = Error('"' + entry + '" does not exist.');
        } else if (e.code == FileError.INVALID_MODIFICATION_ERR) {
-         e = new Error('"' + newName + '" already exists.');
+         e.message = Error('"' + newName + '" already exists.');
        }
        if (opt_onError) {
          opt_onError(e);
@@ -467,37 +480,51 @@ var Filer = new function() {
        }
     };
 
-    if (entry.isFile || entry.isDirectory) {
-      entry.moveTo(cwd_, newName, opt_successCallback, function(e) {
+    if (entryOrPath.isFile || entryOrPath.isDirectory) {
+      entryOrPath.moveTo(cwd_, newName, opt_successCallback, function(e) {
         errorHandler(e, opt_errorHandler);
       });
     } else {
-      getEntry_(function(fileOrDirEntry) {
+      /*TODO: implement entryOrPath as a string.
+      cwd_.getDirectory(dirEntryOrPath, {}, callback, opt_errorHandler);
         fileOrDirEntry.moveTo(cwd_, newName, opt_successCallback, function(e) {
           errorHandler(e, opt_errorHandler);
         });
-      }, entry);
+      }, entry);*/
     }
   };
 
   /**
    * Deletes a file or directory entry.
    *
-   * @param {FileEntry|DirectoryEntry} entry The file or directory to remove.
-   *     If entry is a DirectoryEntry, it's contents are removed recursively.
+   * @param {string|FileEntry|DirectoryEntry} entryOrPath The file or directory
+   *     to remove. If entry is a DirectoryEntry, its contents are removed
+   *     recursively.
    * @param {Function} successCallback Zero arg callback invoked on
    *     successful removal.
    * @param {Function=} opt_errorHandler Optional error callback.
    */
-  Filer.prototype.rm = function(entry, successCallback, opt_errorHandler) {
+  Filer.prototype.rm = function(entryOrPath, successCallback,
+                                opt_errorHandler) {
     if (!fs_) {
       throw new Error(FS_INIT_ERROR_MSG);
     }
 
-    if (entry.isFile) {
-      entry.remove(successCallback, opt_errorHandler);
-    } else if (entry.isDirectory) {
-      entry.removeRecursively(successCallback, opt_errorHandler);
+    var removeIt = function(entry) {
+      if (entry.isFile) {
+        entry.remove(successCallback, opt_errorHandler);
+      } else if (entry.isDirectory) {
+        entry.removeRecursively(successCallback, opt_errorHandler);
+      }
+    };
+
+    if (!(entryOrPath.isFile || entryOrPath.isDirectory)) {
+      self.resolveLocalFileSystemURL(
+           pathToFsURL_(entryOrPath), function(entry) {
+        removeIt(entry);
+      }, opt_errorHandler);
+    } else {
+      removeIt(entryOrPath); // entryOrPath is a DirectoryEntry or FileEntry.
     }
   };
 
