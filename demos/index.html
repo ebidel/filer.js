@@ -48,8 +48,9 @@ Other:
 <header>
   <img src="images/icons/favicon.png" alt="HTML5 Filesystem Playground" title="HTML5 Filesystem Playground">
   <h1>HTML5 <a href="http://www.html5rocks.com/tutorials/file/filesystem/" target="_blank">Filesystem</a> Playground</h1>
-  <div style="width:-webkit-flex(50%);text-align:right;">
-    <!--<progress id="progress" value="0" min="0" max="100"></progress>-->
+  <div>
+    <span>Display as: <a href="javascript:" onclick="display(this, 'list')">list</a> / <a href="javascript:" onclick="display(this, 'large')">icons</a></span>
+    <span><input type="checkbox" onclick="toggleLog()" id="toggle-log"><label for="toggle-log">Show log</label></span>
     <button id="openFsButton" onclick="refreshFolder()" alt="Refresh view" title="Refresh view">Open file system</button>
     <input type="file" class="button" webkitdirectory disabled alt="Import files into the current folder" title="Import files into the current folder">
     <select id="entry-type" title="Select folder or file to create">
@@ -65,8 +66,6 @@ Other:
   <div style="display:-webkit-flexbox;margin: 25px 0 15px 0;">
     <div>
       <input type="text" id="cwd" disabled alt="Current directory path" title="Current directory path">
-      <span style="margin-right: 10px">Display as: <a href="javascript:" onclick="display(this, 'list')">list</a> | <a href="javascript:" onclick="display(this, 'large')">icons</a></span>
-      <span><input type="checkbox" onclick="toggleLog()" id="toggle-log"><label for="toggle-log">Show log</label></span>
     </div>
     <div style="width: -webkit-flex(50%);text-align:right;">
       Drag in files from the desktop to import them.

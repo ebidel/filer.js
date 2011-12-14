@@ -43,10 +43,11 @@ body {
   overflow-x: hidden;
   -webkit-transition: -webkit-transform 300ms ease-in-out;
   -webkit-transform-origin: 50% 100%;
+  -webkit-font-smoothing: antialiased;
 }
 label {
   cursor: pointer;
-  vertical-align: middle;
+  margin-left: 3px;
 }
 [contenteditable] {
   border: 1px dashed transparent;
@@ -173,6 +174,23 @@ header {
 }
 header > * {
   -webkit-flex-align: center;
+}
+header > div {
+  width: -webkit-flex(50%);
+  text-align: right;
+}
+header > div > span {
+  margin-right: 10px;
+  vertical-align: middle;
+  color: white;
+}
+header > div > span:first-child {
+  border-right: 2px solid rgba(255,255,255,0.25);
+  padding-right: 10px;
+}
+header > div > span a {
+  color: inherit;
+  font-weight: bold;
 }
 header img {
   height: 45px;
