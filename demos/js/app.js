@@ -1,9 +1,5 @@
 var logger = new Logger('#log div');
-var dnd = new DnDFileController('body', function(files) {
-  Utils.toArray(files).forEach(function(file, i) {
-    writeFile(file);
-  });
-});
+var dnd = new DnDFileController('body', importFiles);
 
 var filer = new Filer();
 
@@ -15,6 +11,17 @@ var filesContainer = document.querySelector('#files');
 var fileList = filesContainer.querySelector('ul');
 var openFsButton = document.querySelector('#openFsButton');
 var errors = document.querySelector('#errors');
+var importButton = document.querySelector('[type="file"]');
+
+function importFiles(files) {
+  Utils.toArray(files).forEach(function(file, i) {
+    writeFile(file);
+  });
+}
+
+importButton.addEventListener('change', function(e) {
+  importFiles(e.target.files);
+}, false);
 
 function createNewEntry() {
   var type = document.querySelector('#entry-type').value;
@@ -217,7 +224,7 @@ function openFS() {
     refreshFolder();
     openFsButton.innerHTML = '<div></div>';
     openFsButton.classList.add('fakebutton');
-    document.querySelector('[type="file"]').disabled = false;
+    importButton.disabled = false;
   }, onError);
 }
 
