@@ -52,10 +52,12 @@ Other:
     <!--<progress id="progress" value="0" min="0" max="100"></progress>-->
     <button id="openFsButton" onclick="refreshFolder()" alt="Refresh view" title="Refresh view">Open file system</button>
     <input type="file" class="button" webkitdirectory disabled alt="Import files into this app" title="Import files into this app">
-    <input type="text" id="dir-name" placeholder="myDir" />
-    <button onclick="mkdir(document.querySelector('#dir-name').value)">Create</button>
-    <input type="text" id="file-name" placeholder="test.txt"/>
-    <button onclick="newFile(document.querySelector('#file-name').value)">Create</button>
+    <select id="entry-type">
+      <option value="dir">Directory</option>
+      <option value="file">File</option>
+    <select>
+    <input type="text" id="entry-name" placeholder="test.txt / foldername"/>
+    <button onclick="createNewEntry()">Create</button>
   </div>
 </header>
 <section>
@@ -80,7 +82,7 @@ Other:
   </div>
 </section>
 </div>
-<script src="../src/filer.min.js" defer></script>
+<script src="../src/filer.js" defer></script>
 <script src="js/logger.js" defer></script>
 <script src="js/dnd.js" defer></script>
 <script src="js/app.js" onload="openFS()" defer></script>

@@ -16,6 +16,19 @@ var fileList = filesContainer.querySelector('ul');
 var openFsButton = document.querySelector('#openFsButton');
 var errors = document.querySelector('#errors');
 
+function createNewEntry() {
+  var type = document.querySelector('#entry-type').value;
+  var name = document.querySelector('#entry-name').value;
+  switch (type) {
+    case 'dir':
+      mkdir(name);
+      break;
+    case 'file':
+      newFile(name);
+      break;
+  }
+}
+
 function onError(e) {
   logger.log('<p class="error">' + e.name + '</p>');
   errors.textContent = e.name;
