@@ -118,6 +118,31 @@ test('storage type', 4, function() {
 });
 
 
+module('helpers', {
+  setup: function() {
+    this.filer = new Filer();
+    stop();
+    this.filer.init({}, function(fs) {
+      start();
+    }, onError);
+  },
+  teardown: function() {
+
+  }
+});
+
+
+test('pathToFilesystemURL()', 4, function() {
+  var filer = this.filer;
+  var fsURL = 'filesystem:' + document.location.origin + '/temporary/';
+  var path = 'test/me';
+
+  equals(filer.pathToFilesystemURL('/'), fsURL, 'root as arg');
+  equals(filer.pathToFilesystemURL(fsURL), fsURL, 'filesystem URL as arg');
+  equals(filer.pathToFilesystemURL('/' + path), fsURL + path, 'abs path as arg');
+  equals(filer.pathToFilesystemURL(path), fsURL + path, 'relative path as arg');
+});
+
 module('methods', {
   setup: function() {
     this.filer = new Filer();
