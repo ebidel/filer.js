@@ -15,6 +15,7 @@ function onError(e) {
   start();
 };
 
+
 module('init()', {
   setup: function() {
     if (document.location.protocol == 'file:') {
@@ -131,7 +132,6 @@ module('helpers', {
   }
 });
 
-
 test('pathToFilesystemURL()', 5, function() {
   var filer = this.filer;
   var fsURL = 'filesystem:' + document.location.origin + '/temporary/';
@@ -143,6 +143,7 @@ test('pathToFilesystemURL()', 5, function() {
   equals(filer.pathToFilesystemURL('/' + path), fsURL + path, 'abs path as arg');
   equals(filer.pathToFilesystemURL(path), fsURL + path, 'relative path as arg');
 });
+
 
 module('methods', {
   setup: function() {
@@ -224,7 +225,6 @@ test('mkdir()', 7, function() {
 
 });
 
-
 test('ls()', 6, function() {
   var filer = this.filer;
 
@@ -271,7 +271,6 @@ test('ls()', 6, function() {
   }*/
 
 });
-
 
 test('cd()', 5, function() {
   var filer = this.filer;
@@ -321,7 +320,6 @@ test('cd()', 5, function() {
   // TODO: test optional callback args to cd().
 });
 
-
 test('create()', 3, function() {
   var filer = this.filer;
   var fileName = this.FILE_NAME + Date.now();
@@ -350,7 +348,6 @@ test('create()', 3, function() {
     }, onError);
   }, 500);
 });
-
 
 test('rm()', 5, function() {
   var filer = this.filer;
@@ -402,28 +399,50 @@ test('rm()', 5, function() {
   }, onError);
 });
 
-
 test('cp()', 0, function() {
   var filer = this.filer;
   var fileName = this.FILE_NAME;
   var folderName = this.FOLDER_NAME + Date.now();
 });
 
-/*
-test('rename()', 1, function() {
+/*test('rename()', 1, function() {
 
 });
 */
 
-/*
-test('write()', 1, function() {
+/*test('write()', 1, function() {
 
 });
 */
 
-/*
-test('open()', 1, function() {
+/*test('open()', 1, function() {
 
 });
 */
 
+
+module('Utils', {
+  setup: function() {
+
+  },
+  teardown: function() {
+
+  }
+});
+
+test('getFileExtension()', 4, function() {
+  equals(Util.getFileExtension('test.txt'), '.txt', 'single char');
+  equals(Util.getFileExtension('test.cc'), '.cc', 'double char');
+  equals(Util.getFileExtension('test.tar.gz'), '.gz', 'double extension');
+  equals(Util.getFileExtension('something/test.mp3'), '.mp3', 'path');
+});
+
+test('toDataURL()', 3, function() {
+  var content = 'body { background: green; }';
+  var mimetype = 'text/css';
+  var expected = 'data:text/css,body { background: green; }';
+  var expectedBin = 'data:text/css;base64,Ym9keSB7IGJhY2tncm91bmQ6IGdyZWVuOyB9';
+  equals(Util.toDataURL(content, mimetype), expectedBin, 'plaintext, no arg specified');
+  equals(Util.toDataURL(content, mimetype, false), expected, 'plaintext, opt arg specified');
+  equals(Util.toDataURL(content, mimetype, true), expectedBin, 'binary, opt arg');
+});

@@ -120,7 +120,7 @@ var Util = {
    * @param {string} filename The filename.
    * @return {string} The file's extension.
    */
-  getExtension: function(filename) {
+  getFileExtension: function(filename) {
     return filename.substring(filename.lastIndexOf('.'));
   }
 };

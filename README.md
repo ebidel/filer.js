@@ -159,3 +159,27 @@ filer.mkdir('music/genres/jazz/', false, function(dirEntry) {
 The second argument to `mkdir()` a boolean indicating whether or not an error
 should be thrown if the directory already exists. The last two are a success
 callback and optional error callback.
+
+Utility methods
+============
+
+The library contains a few utility methods to help you out.
+
+```javascript
+Util.strToObjectURL(binaryStr, opt_contentType);
+Util.fileToObjectURL(Blob|File);
+
+Util.toDataURL(binaryStr, contentType) // e.g. "data:application/pdf;base64,Ym9keSB7IG..."
+// For plaintext (non-binary data):
+// Util.toDataURL('body { background: green; }', 'text/css', false) == data:text/css,body { background: green; }
+
+Util.arrayToBinaryString(bytes); // bytes is an array, each varying from 0-255.
+
+Util.getFileExtension('myfile.txt') == '.txt'
+
+var pres = document.querySelectorAll('pre');
+Util.toArray(pres).forEach(function(pre, i) {
+  // blah blah blah.
+});
+```
+

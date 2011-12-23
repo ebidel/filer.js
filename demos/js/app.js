@@ -404,7 +404,7 @@ function readFile(i) {
 
         filePreview.appendChild(img);
 
-     } else if (PREVIEWABLE_FILES.indexOf(Util.getExtension(file.name)) != -1) {
+     } else if (PREVIEWABLE_FILES.indexOf(Util.getFileExtension(file.name)) != -1) {
         var reader = new FileReader();
         reader.onload = function(e) {
           var textarea = document.createElement('textarea');
