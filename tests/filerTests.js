@@ -11,7 +11,7 @@ test("expect in test", 3, function() {
 });*/
 
 function onError(e) {
-  ok(false, 'unexpected error' + e.toString());
+  ok(false, 'unexpected error ' + e.name);
   start();
 };
 
@@ -132,13 +132,14 @@ module('helpers', {
 });
 
 
-test('pathToFilesystemURL()', 4, function() {
+test('pathToFilesystemURL()', 5, function() {
   var filer = this.filer;
   var fsURL = 'filesystem:' + document.location.origin + '/temporary/';
   var path = 'test/me';
 
   equals(filer.pathToFilesystemURL('/'), fsURL, 'root as arg');
   equals(filer.pathToFilesystemURL(fsURL), fsURL, 'filesystem URL as arg');
+  equals(filer.pathToFilesystemURL(fsURL + path), fsURL + path, 'filesystem URL as arg2');
   equals(filer.pathToFilesystemURL('/' + path), fsURL + path, 'abs path as arg');
   equals(filer.pathToFilesystemURL(path), fsURL + path, 'relative path as arg');
 });
@@ -161,9 +162,9 @@ module('methods', {
   }
 });
 
-test('mkdir()', 5, function() {
+test('mkdir()', 7, function() {
   var filer = this.filer;
-  var folderName = this.FOLDER_NAME;
+  var folderName = this.FOLDER_NAME + Date.now();
 
   ok(filer.isOpen, 'FS opened');
 
@@ -175,6 +176,15 @@ test('mkdir()', 5, function() {
   }, onError);
 
   stop();
+  filer.mkdir(folderName, null, function(entry) {
+    ok(true);
+    start();
+  }, function(e) {
+    ok(false, "Default exclusive parameter is not false");
+    start();
+  });
+
+  stop();
   filer.mkdir(folderName, true, function(entry) {
     ok(false);
     start();
@@ -183,7 +193,18 @@ test('mkdir()', 5, function() {
     start();
   });
 
-  // Try to create a folder without first calling init().
+  stop();
+  var folderName2 = folderName + '2';
+  var fullPath = [folderName2, folderName2, folderName2 + '_end'].join('/');
+  filer.mkdir(fullPath, false, function(entry) {
+    equals(entry.name, folderName2 + '_end', 'last created folder is named "' + folderName2 + '_end"');
+    equals(entry.fullPath, '/' + fullPath, "Subfolders created properly");
+    filer.rm(folderName2, function() {
+      start();
+    }, onError);
+  }, onError);
+
+  /*// Try to create a folder without first calling init().
   var filer2 = new Filer();
   try {
     stop();
@@ -191,10 +212,18 @@ test('mkdir()', 5, function() {
   } catch (e) {
     ok(true, 'Attempt to use this method before calling init()');
     start();
-  }
+  }*/
 
-  // TODO: cleanup for this test, although it is done later.
+  // Stall clean up for a bit so all tests have run.
+  setTimeout(function() {
+    stop();
+    filer.rm(folderName, function() {
+      start();
+    }, onError);
+  }, 500);
+
 });
+
 
 test('ls()', 6, function() {
   var filer = this.filer;
@@ -229,7 +258,7 @@ test('ls()', 6, function() {
     start();
   });
 
-  /*// Try to create a folder without first calling init().
+  /* //Try to create a folder without first calling init().
   var filer2 = new Filer();
   try {
     stop();
@@ -246,7 +275,7 @@ test('ls()', 6, function() {
 
 test('cd()', 5, function() {
   var filer = this.filer;
-  var folderName = this.FOLDER_NAME;
+  var folderName = this.FOLDER_NAME + Date.now();
 
   stop();
   filer.cd('.', function(dirEntry) {
@@ -256,7 +285,7 @@ test('cd()', 5, function() {
 
   stop();
   filer.mkdir(folderName, false, function(dirEntry) {
-    filer.cd(folderName, function(dirEntry) {
+    filer.cd(folderName, function(dirEntry2) {
       ok(true, 'cd with path name as an argument.');
       start();
     }, onError);
@@ -264,7 +293,7 @@ test('cd()', 5, function() {
 
   stop();
   filer.mkdir(folderName, false, function(dirEntry) {
-    filer.cd('/' + folderName, function(dirEntry) {
+    filer.cd('/' + folderName, function(dirEntry2) {
       ok(true, 'cd with abspath name as an argument.');
       start();
     }, onError);
@@ -272,7 +301,7 @@ test('cd()', 5, function() {
 
   stop();
   filer.mkdir(folderName, false, function(dirEntry) {
-    filer.cd(dirEntry, function(dirEntry) {
+    filer.cd(dirEntry, function(dirEntry2) {
       ok(true, 'cd with DirectoryEntry as an argument.');
       filer.ls('.', function(entries) {
         equals(entries.length, 0, 'Empty directory');
@@ -281,18 +310,21 @@ test('cd()', 5, function() {
     }, onError);
   });
 
-  // Clean up.
-  stop();
-  filer.rm(folderName, function() {
-    start();
-  }, onError);
+  // Stall clean up for a bit so all tests have run.
+  setTimeout(function() {
+    stop();
+    filer.rm(folderName, function() {
+      start();
+    }, onError);
+  }, 500);
 
   // TODO: test optional callback args to cd().
 });
 
+
 test('create()', 3, function() {
   var filer = this.filer;
-  var fileName = this.FILE_NAME;
+  var fileName = this.FILE_NAME + Date.now();
 
   stop();
   filer.create(fileName, false, function(entry) {
@@ -310,21 +342,25 @@ test('create()', 3, function() {
     start();
   });
 
-  // Clean up.
-  stop();
-  filer.rm(fileName, function() {
-    start();
-  }, onError);
+  // Stall clean up for a bit so all tests have run.
+  setTimeout(function() {
+    stop();
+    filer.rm(fileName, function() {
+      start();
+    }, onError);
+  }, 500);
 });
 
-test('rm()', 3, function() {
+
+test('rm()', 5, function() {
   var filer = this.filer;
-  var fileName = this.FILE_NAME;
+  var fileName = this.FILE_NAME + Date.now();
+  var folderName = this.FOLDER_NAME + Date.now();
 
   stop();
   filer.create(fileName, false, function(entry) {
     filer.rm(fileName, function() {
-      ok(true, fileName + ' removed by path.')
+      ok(true, fileName + ' removed file by path.')
       start();
     }, onError);
   }, onError);
@@ -333,7 +369,7 @@ test('rm()', 3, function() {
   var fileName2 = fileName + '2';
   filer.create(fileName2, false, function(entry) {
     filer.rm(entry, function() {
-      ok(true, fileName2 + ' removed by entry.')
+      ok(true, fileName2 + ' removed file by entry.')
       start();
     }, onError);
   }, onError);
@@ -343,10 +379,34 @@ test('rm()', 3, function() {
   filer.create(fileName3, false, function(entry) {
     var fsURL = filer.pathToFilesystemURL(entry.fullPath);
     filer.rm(fsURL, function() {
-      ok(true, fileName3 + ' removed by filesystem URL.')
+      ok(true, fileName3 + ' removed file by filesystem URL.')
       start();
     }, onError);
   }, onError);
+
+  stop();
+  filer.mkdir(folderName, false, function(entry) {
+    filer.rm(folderName, function() {
+      ok(true, folderName + ' removed dir by path.')
+      start();
+    }, onError);
+  }, onError);
+
+  stop();
+  var folderName2 = folderName + '2';
+  filer.mkdir(folderName2, false, function(entry) {
+    filer.rm(entry, function() {
+      ok(true, folderName2 + ' removed dir by entry.')
+      start();
+    }, onError);
+  }, onError);
+});
+
+
+test('cp()', 0, function() {
+  var filer = this.filer;
+  var fileName = this.FILE_NAME;
+  var folderName = this.FOLDER_NAME + Date.now();
 });
 
 /*
@@ -354,3 +414,16 @@ test('rename()', 1, function() {
 
 });
 */
+
+/*
+test('write()', 1, function() {
+
+});
+*/
+
+/*
+test('open()', 1, function() {
+
+});
+*/
+

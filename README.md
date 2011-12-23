@@ -61,7 +61,9 @@ Examples
 ls()
 -----
 
-`ls()` lists the files in the directory you pass it. The first arg is a path to a directory:
+*List the contents of a directory.*
+
+The first arg is a path to a directory:
 
 ```javascript
 filer.ls('.', function(entries) {
@@ -94,7 +96,9 @@ filer.ls('/', function(entries) {
 cd()
 -----
 
-`cd()` allows you to change into another directory. Future operations will become relative to the new directory:
+*Allows you to change into another directory.*
+
+When using `cd()`, future operations are treated relative to the new directory. As a convenience, the success callback is passed the `DirectoryEntry` changed into.
 
 ```javascript
 // Passing a path.
@@ -110,3 +114,31 @@ filer.cd(dirEntry, function(dirEntry2) {
 filer.cd('/path/to/folder'); // Both callbacks are optional.
 ```
 
+mkdir()
+-----
+
+*Creates an empty directory.*
+
+```javascript
+filer.mkdir('myFolder', false, function(dirEntry) {
+  // dirEntry.isDirectory == true
+  // dirEntry.name == 'myFolder'
+}, onError);
+```
+
+You can pass `mkdir()` a folder name or a path to create. In the latter,
+it behaves like UNIX's `mkdir -p`, creating each intermediate directory as needed.
+
+For example, the following would create a new hierarchy ("music/genres/jazz") in
+the current folder:
+
+```javascript
+filer.mkdir('music/genres/jazz/', false, function(dirEntry) {
+  // dirEntry.isDirectory == true
+  // dirEntry.name == 'myFolder'
+}, onError);
+```
+
+The second argument to `mkdir()` a boolean indicating whether or not an error
+should be thrown if the directory already exists. The last two are success callback
+and optional error callback.

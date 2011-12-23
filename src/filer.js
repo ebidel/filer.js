@@ -1,3 +1,5 @@
+"use strict";
+
 /*
 Copyright 2011 - Eric Bidelman
 
@@ -26,7 +28,7 @@ self.BlobBuilder = self.BlobBuilder || self.MozBlobBuilder ||
                    self.WebKitBlobBuilder;
 
 
-var Utils = {
+var Util = {
 
   /**
    * Turns a NodeList into an array.
@@ -110,6 +112,16 @@ var Utils = {
       bstr[i] = String.fromCharCode(bytes[i]);
     }
     return bstr.join('');
+  },
+
+  /**
+   * Returns the file extension for a given filename.
+   *
+   * @param {string} filename The filename.
+   * @return {string} The file's extension.
+   */
+  getExtension: function(filename) {
+    return filename.substring(filename.lastIndexOf('.'));
   }
 };
 
@@ -139,11 +151,11 @@ FileError.prototype.__defineGetter__('name', function() {
 
 var Filer = new function() {
 
-  const FS_INIT_ERROR_MSG = 'Filesystem has not been initialized.';
-  const NOT_IMPLEMENTED_MSG = 'Not implemented.';
-  const NOT_A_DIRECTORY = 'Path was not a directory.';
-  const FS_URL_SCHEME = 'filesystem:';
-  const DEFAULT_FS_SIZE = 1024 * 1024; // 1MB.
+  var FS_INIT_ERROR_MSG = 'Filesystem has not been initialized.';
+  var NOT_IMPLEMENTED_MSG = 'Not implemented.';
+  var NOT_A_DIRECTORY = 'Path was not a directory.';
+  var FS_URL_SCHEME = 'filesystem:';
+  var DEFAULT_FS_SIZE = 1024 * 1024; // 1MB.
 
   var fs_ = null;
   var cwd_ = null;
@@ -251,7 +263,7 @@ var Filer = new function() {
    *
    * @param {object=} opt_initObj Optional object literal with the following
    *     properties. Note: If {} or null is passed, default values are used.
-   *     persistent {Boolean=} Whether the browser should use persistent storage.
+   *     persistent {Boolean=} Whether the browser should use persistent quota.
    *         Default is false.
    *     size {int=} The storage size (in bytes) to open the filesystem with.
    *         Defaults to DEFAULT_FS_SIZE.
@@ -268,7 +280,7 @@ var Filer = new function() {
       });
     }
 
-    initObj = !opt_initObj ? {} : opt_initObj; // Use defaults if obj is null.
+    var initObj = opt_initObj ? opt_initObj : {}; // Use defaults if obj is null.
 
     var size = initObj.size || DEFAULT_FS_SIZE;
     this.type = self.TEMPORARY;
@@ -326,7 +338,7 @@ var Filer = new function() {
             });
             successCallback(entries_);
           } else {
-            entries_ = entries_.concat(Utils.toArray(results));
+            entries_ = entries_.concat(Util.toArray(results));
             readEntries();
           }
         }, opt_errorHandler);
@@ -346,52 +358,72 @@ var Filer = new function() {
   /**
    * Creates a new directory.
    *
-   * @param {string} name The name of the directory to create.
-   * @param {bool=} opt_exclusive True (default) if an error should be thrown if
-   *     the directory already exists.
+   * @param {string} path The name of the directory to create. If a path is
+   *     given, each intermediate dir is created (e.g. similar to mkdir -p).
+   * @param {bool=} opt_exclusive True if an error should be thrown if
+   *     one or more of the directories already exists. False by default.
    * @param {Function} successCallback Success handler passed the
-   *     DirectoryEntry.
+   *     DirectoryEntry that was created. If we were passed a path, the last
+   *     directory that was created is passed back.
    * @param {Function=} opt_errorHandler Optional error callback.
    */
-  Filer.prototype.mkdir = function(name, opt_exclusive, successCallback,
+  Filer.prototype.mkdir = function(path, opt_exclusive, successCallback,
                                    opt_errorHandler) {
     if (!fs_) {
       throw new Error(FS_INIT_ERROR_MSG);
     }
 
-    var exclusive = opt_exclusive != null ? opt_exclusive : true;
+    var exclusive = opt_exclusive != null ? opt_exclusive : false;
 
-    cwd_.getDirectory(name, {create: true, exclusive: exclusive},
-      function (dirEntry) {
-        if (dirEntry.isDirectory) {
-          successCallback(dirEntry);
-        } else {
-          var e  = new Error(name + ' is not a directory');
-          if (opt_errorHandler) {
-            opt_errorHandler(e);
-          } else {
-            throw e;
-          }
-        }
-      },
-      function(e) {
-        if (e.code == FileError.INVALID_MODIFICATION_ERR) {
-          e.message = "'" + name + "' already exists";
-          if (opt_errorHandler) {
-            opt_errorHandler(e);
-          } else {
-            throw e;
-          }
-        }
+    var folderParts = path.split('/');
+
+    var createDir = function(rootDir, folders) {
+      // Throw out './' or '/' and move on. Prevents: '/foo/.//bar'.
+      if (folders[0] == '.' || folders[0] == '') {
+        folders = folders.slice(1);
       }
-    );
+
+      rootDir.getDirectory(folders[0], {create: true, exclusive: exclusive},
+        function (dirEntry) {
+          if (dirEntry.isDirectory) { // TODO: check shouldn't be necessary.
+            // Recursively add the new subfolder if we have more to create and
+            // There was more than one folder to create.
+            if (folders.length && folderParts.length != 1) {
+              createDir(dirEntry, folders.slice(1));
+            } else {
+              // Return the last directory that was created.
+              successCallback(dirEntry);
+            }
+          } else {
+            var e = new Error(path + ' is not a directory');
+            if (opt_errorHandler) {
+              opt_errorHandler(e);
+            } else {
+              throw e;
+            }
+          }
+        },
+        function(e) {
+          if (e.code == FileError.INVALID_MODIFICATION_ERR) {
+            e.message = "'" + path + "' already exists";
+            if (opt_errorHandler) {
+              opt_errorHandler(e);
+            } else {
+              throw e;
+            }
+          }
+        }
+      );
+    };
+
+    createDir(cwd_, folderParts);
   };
 
   /**
    * Opens a file.
    *
    * @param {string} path The relative path of the file to open, from the
-   *     current workind directory.
+   *     current working directory.
    * @param {Function=} opt_successCallback Optional success callback.
    *     If present, this callback is passed a File object. If no success
    *     callback is passed, the file is opened in a popup window using its
@@ -547,19 +579,22 @@ var Filer = new function() {
       cwd_ = dirEntryOrPath;
       opt_successCallback && opt_successCallback(cwd_);
     } else {
-      self.resolveLocalFileSystemURL(pathToFsURL_(dirEntryOrPath), function(dirEntry) {
-        if (dirEntry.isDirectory) {
-          cwd_ = dirEntry;
-          opt_successCallback && opt_successCallback(cwd_);
-        } else {
-          var e = new Error(NOT_A_DIRECTORY);
-          if (opt_errorHandler) {
-            opt_errorHandler(e);
+      self.resolveLocalFileSystemURL(pathToFsURL_(dirEntryOrPath),
+        function(dirEntry) {
+          if (dirEntry.isDirectory) {
+            cwd_ = dirEntry;
+            opt_successCallback && opt_successCallback(cwd_);
           } else {
-            throw e;
+            var e = new Error(NOT_A_DIRECTORY);
+            if (opt_errorHandler) {
+              opt_errorHandler(e);
+            } else {
+              throw e;
+            }
           }
-        }
-      }, opt_errorHandler);
+        },
+        opt_errorHandler
+      );
     }
   };
 
