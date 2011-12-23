@@ -1,6 +1,15 @@
+var PREVIEWABLE_FILES = [
+  '.as',
+  '.txt',
+  '.pl',
+  '.h',
+  '.cc', '.cpp',
+  '.csv', '.tsv',
+  '.js'
+];
+
 var logger = new Logger('#log div');
 var dnd = new DnDFileController('body', importFiles);
-
 var filer = new Filer();
 
 var entries = []; // Cache of current working directory's entries.
@@ -14,13 +23,22 @@ var errors = document.querySelector('#errors');
 var importButton = document.querySelector('[type="file"]');
 
 function importFiles(files) {
-  Utils.toArray(files).forEach(function(file, i) {
+  Util.toArray(files).forEach(function(file, i) {
     writeFile(file);
   });
 }
 
 importButton.addEventListener('change', function(e) {
-  importFiles(e.target.files);
+  var files = e.target.files;
+  if (files.length) {
+    var rootFolderName = files[0].webkitRelativePath.split('/')[0];
+    mkdir(rootFolderName, function(dirEntry) {
+      addEntryToList(dirEntry);
+      cd(entries.length - 1, function(entries) {
+        importFiles(files);
+      });
+    });
+  }
 }, false);
 
 function createNewEntry() {
@@ -234,19 +252,23 @@ function setCwd(path) {
   document.querySelector('#cwd').value = '/' + prefix + path;
 }
 
-function mkdir(name) {
+function mkdir(name, opt_callback) {
   if (!name) return;
 
   errors.textContent = ''; // Reset errors.
 
   try {
-    filer.mkdir(name, true, addEntryToList, onError);
+    if (opt_callback) {
+      filer.mkdir(name, true, opt_callback, onError);
+    } else {
+      filer.mkdir(name, true, addEntryToList, onError);
+    }
   } catch(e) {
     logger.log('<p class="error">' + e + '</p>');
   }
 }
 
-function cd(i) {
+function cd(i, opt_callback) {
   errors.textContent = ''; // Reset errors.
 
   if (i == -1) {
@@ -257,7 +279,11 @@ function cd(i) {
 
   setCwd(path);
 
-  filer.ls(path, renderEntries, onError);
+  if (opt_callback) {
+    filer.ls(path, opt_callback, onError);
+  } else {
+    filer.ls(path, renderEntries, onError);
+  }
 }
 
 function openFile(i) {
@@ -363,7 +389,8 @@ function readFile(i) {
         player.load();
         player.play();
 
-      } else if (file.type.match(/text.*/)) {
+      } else if (file.type.match(/text.*/) ||
+                 file.type.match(/application\/pdf/)) {
 
         var iframe = document.createElement('iframe');
         iframe.src = entry.toURL();
@@ -376,6 +403,17 @@ function readFile(i) {
         img.src = entry.toURL();
 
         filePreview.appendChild(img);
+
+     } else if (PREVIEWABLE_FILES.indexOf(Util.getExtension(file.name)) != -1) {
+        var reader = new FileReader();
+        reader.onload = function(e) {
+          var textarea = document.createElement('textarea');
+          textarea.style.width = '50%';
+          textarea.style.height = '350px';
+          textarea.textContent = e.target.result;
+          filePreview.appendChild(textarea);
+        };
+        reader.readAsText(file);
       } else {
         var p = document.createElement('p');
         p.textContent = 'No preview.'
