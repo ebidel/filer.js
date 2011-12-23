@@ -152,8 +152,7 @@ the current folder:
 
 ```javascript
 filer.mkdir('music/genres/jazz/', false, function(dirEntry) {
-  // dirEntry.isDirectory == true
-  // dirEntry.name == 'myFolder'
+  // dirEntry.name == 'jazz' // Note: dirEntry is the last entry created.
 }, onError);
 ```
 
