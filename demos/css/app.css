@@ -73,7 +73,7 @@ li {
   padding-bottom: 2px;
 }
 .dropping {
-  -webkit-transform: scale(0.9);
+  -webkit-transform: scale(0.95);
   background-image: -webkit-gradient(
     linear, left bottom, left top,
     color-stop(0.13, rgb(209,144,23)),
