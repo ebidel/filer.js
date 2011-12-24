@@ -9,7 +9,12 @@ var PREVIEWABLE_FILES = [
 ];
 
 var logger = new Logger('#log div');
-var dnd = new DnDFileController('body', importFiles);
+var dnd = new DnDFileController('body', function(files) {
+  Util.toArray(files).forEach(function(file, i) {
+    writeFile(file.name, file);
+  });
+});
+
 var filer = new Filer();
 
 var entries = []; // Cache of current working directory's entries.
@@ -22,20 +27,28 @@ var openFsButton = document.querySelector('#openFsButton');
 var errors = document.querySelector('#errors');
 var importButton = document.querySelector('[type="file"]');
 
-function importFiles(files) {
-  Util.toArray(files).forEach(function(file, i) {
-    writeFile(file);
-  });
-}
-
 importButton.addEventListener('change', function(e) {
   var files = e.target.files;
   if (files.length) {
-    var rootFolderName = files[0].webkitRelativePath.split('/')[0];
-    mkdir(rootFolderName, function(dirEntry) {
-      addEntryToList(dirEntry);
-      cd(entries.length - 1, function(entries) {
-        importFiles(files);
+    var count = 0;
+    Util.toArray(files).forEach(function(file, i) {
+
+      var folders = file.webkitRelativePath.split('/');
+      folders = folders.slice(0, folders.length - 1);
+
+      // Add each directory. If it already exists, then a noop.
+      mkdir(folders.join('/'), function(dirEntry) {
+        var path = file.webkitRelativePath;
+
+        ++count;
+
+        // Write each file by it's path. Skipt '/.' (which is a directory).
+        if (path.lastIndexOf('/.') !=  path.length - 2) {
+          writeFile(path, file, false);
+          if (count == files.length) {
+            filer.ls('.', renderEntries, onError); // Rerender view on final file.
+          }
+        }
       });
     });
   }
@@ -259,7 +272,7 @@ function mkdir(name, opt_callback) {
 
   try {
     if (opt_callback) {
-      filer.mkdir(name, true, opt_callback, onError);
+      filer.mkdir(name, false, opt_callback, onError);
     } else {
       filer.mkdir(name, true, addEntryToList, onError);
     }
@@ -303,16 +316,19 @@ function newFile(name) {
   }
 }
 
-function writeFile(file) {
+function writeFile(fileName, file, opt_rerender) {
   if (!file) return;
+
+  var rerender = opt_rerender == undefined ? true : false;
 
   errors.textContent = ''; // Reset errors.
 
-  filer.write(file.name, {data: file, type: file.type},
+  filer.write(fileName, {data: file, type: file.type},
     function(fileEntry, fileWriter) {
-//console.log(fileEntry, fileWriter);
-      addEntryToList(fileEntry);
-      filer.ls('.', renderEntries, onError); // Just re-read this dir.
+      if (rerender) {
+        addEntryToList(fileEntry);
+        filer.ls('.', renderEntries, onError); // Just re-read this dir.
+      }
     },
     onError
   );

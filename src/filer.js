@@ -188,7 +188,7 @@ var MyFileError = function(obj) {
   this.code = obj.code;
   this.name = obj.name;
 };
-
+//MyFileError.prototype.__proto__ = FileError.prototype;
 
 // Extend FileError with custom errors and a convenience method to get error
 // code mnemonic.
