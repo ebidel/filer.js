@@ -38,7 +38,9 @@ Next, initialize the library:
 
 ```javascript
 filer.init({persistent: false, size: 1024 * 1024}, function(fs) {
-  //  filer.size == Filer.DEFAULT_FS_SIZE
+  // filer.size == Filer.DEFAULT_FS_SIZE
+  // filer.isOpen == true
+  // filer.fs == fs
 }, onError);
 ```
 
