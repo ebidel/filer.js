@@ -188,9 +188,11 @@ Util.arrayToBinaryString(bytes); // bytes is an Array, each varying from 0-255.
 
 Util.getFileExtension('myfile.txt') == '.txt'
 
-var pres = document.querySelectorAll('pre');
-Util.toArray(pres).forEach(function(pre, i) {
-  // blah blah blah.
-});
+// Util.toArray(DOMList/NodeList) == Array
+document.querySelector('input[type="file"]').onchange = function(e) {
+  Util.toArray(this.files).forEach(function(file, i) {
+    // blah blah blah.
+  });
+};
 ```
 
