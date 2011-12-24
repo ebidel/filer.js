@@ -54,7 +54,7 @@ var Util = {
    *     (and therefore should be base64 encoded). True by default.
    * @return {string} The created data: URL.
    */
-  toDataURL: function(str, contentType, opt_isBinary) {
+  strToDataURL: function(str, contentType, opt_isBinary) {
     var isBinary = opt_isBinary != undefined ? opt_isBinary : true;
     if (isBinary) {
       return 'data:' + contentType + ';base64,' + self.btoa(str);
@@ -88,11 +88,68 @@ var Util = {
   /**
    * Creates a blob: URL from a File or Blob object.
    *
-   * @param {string} blob The File or Blob data.
+   * @param {Blob|File} blob The File or Blob data.
    * @return {string} A new blob: URL.
    */
   fileToObjectURL: function(blob) {
     return self.URL.createObjectURL(blob);
+  },
+
+  /**
+   * Reads a File or Blob object and returns it as an ArrayBuffer.
+   *
+   * @param {Blob|File} blob The File or Blob data.
+   * @param {Function} callback Success callback passed the array buffer.
+   * @param {Function=} opt_error Optional error callback if the read fails.
+   */
+  fileToArrayBuffer: function(blob, callback, opt_errorCallback) {
+    var reader = new FileReader();
+    reader.onload = function(e) {
+      callback(e.target.result);
+    };
+    reader.onerror = function(e) {
+      if (opt_errorCallback) {
+        opt_errorCallback(e);
+      }
+    };
+
+    reader.readAsArrayBuffer(blob);
+  },
+
+  /**
+   * Reads an ArrayBuffer as returns its contents as a binary string.
+   *
+   * @param {ArrayBuffer} buffer The buffer of data.
+   * @param {string=} opt_contentType An optional mimetype of the data.
+   * @return {Blob} A blob representing the array buffer data.
+   */
+  arrayBufferToBlob: function(buffer, opt_contentType) {
+    var bb = new BlobBuilder();
+    bb.append(buffer);
+    return opt_contentType ? bb.getBlob(opt_contentType) : bb.getBlob();
+  },
+
+  /**
+   * Reads an ArrayBuffer as returns its contents as a binary string.
+   *
+   * @param {ArrayBuffer} buffer The buffer of data.
+   * @param {Function} callback Success callback passed the binary string.
+   * @param {Function=} opt_error Optional error callback if the read fails.
+   */
+  arrayBufferToBinaryString: function(buffer, callback, opt_errorCallback) {
+    var reader = new FileReader();
+    reader.onload = function(e) {
+      callback(e.target.result);
+    };
+    reader.onerror = function(e) {
+      if (opt_errorCallback) {
+        opt_errorCallback(e);
+      }
+    };
+
+    var bb = new BlobBuilder();
+    bb.append(buffer);
+    reader.readAsBinaryString(bb.getBlob());
   },
 
   /**
@@ -249,7 +306,7 @@ var Filer = new function() {
   /**
    * Constructs and returns a filesystem: URL given a path.
    *
-   * @param {strng=} path The path to construct a URL for.
+   * @param {string=} path The path to construct a URL for.
    *     size {int=} The storage size (in bytes) to open the filesystem with.
    *         Defaults to DEFAULT_FS_SIZE.
    * @return {string} The filesystem: URL.
@@ -268,7 +325,7 @@ var Filer = new function() {
    *     size {int=} The storage size (in bytes) to open the filesystem with.
    *         Defaults to DEFAULT_FS_SIZE.
    * @param {Function=} opt_successCallback Optional success handler passed a
-  *      DOMFileSystem object.
+   *      DOMFileSystem object.
    * @param {Function=} opt_errorHandler Optional error callback.
    */
   Filer.prototype.init = function(opt_initObj, opt_successCallback,

@@ -1,4 +1,3 @@
-
 /*test("module without setup/teardown (default)", function() {
   expect(1);
   ok(true);
@@ -437,12 +436,44 @@ test('getFileExtension()', 4, function() {
   equals(Util.getFileExtension('something/test.mp3'), '.mp3', 'path');
 });
 
-test('toDataURL()', 3, function() {
+test('strToDataURL()', 3, function() {
   var content = 'body { background: green; }';
   var mimetype = 'text/css';
   var expected = 'data:text/css,body { background: green; }';
   var expectedBin = 'data:text/css;base64,Ym9keSB7IGJhY2tncm91bmQ6IGdyZWVuOyB9';
-  equals(Util.toDataURL(content, mimetype), expectedBin, 'plaintext, no arg specified');
-  equals(Util.toDataURL(content, mimetype, false), expected, 'plaintext, opt arg specified');
-  equals(Util.toDataURL(content, mimetype, true), expectedBin, 'binary, opt arg');
+  equals(Util.strToDataURL(content, mimetype), expectedBin, 'plaintext, no arg specified');
+  equals(Util.strToDataURL(content, mimetype, false), expected, 'plaintext, opt arg specified');
+  equals(Util.strToDataURL(content, mimetype, true), expectedBin, 'binary, opt arg');
 });
+
+test('fileToArrayBuffer()', 2, function() {
+  var data = '0123456780';
+  var bb = new BlobBuilder();
+  bb.append(data);
+  stop();
+  Util.fileToArrayBuffer(bb.getBlob(), function(arrayBuffer) {
+    ok(arrayBuffer.__proto__ == ArrayBuffer.prototype, 'Result is an ArrayBuffer');
+    equals(arrayBuffer.byteLength, data.length, 'Size matches');
+    start();
+  }, onError);
+});
+
+test('arrayBufferToBlob()', 2, function() {
+  var len = 10;
+  var ab = new ArrayBuffer(len);
+  var blob = Util.arrayBufferToBlob(ab);
+  ok(blob.__proto__ == Blob.prototype, 'Result is a Blob');
+  equals(ab.byteLength, len, 'Size matches');
+});
+
+test('arrayBufferToBinaryString()', 2, function() {
+  var len = 10;
+  var ab = new ArrayBuffer(len);
+  stop();
+  Util.arrayBufferToBinaryString(ab, function(binStr) {
+    ok(binStr.__proto__ == String.prototype, 'Result is a String');
+    equals(binStr.length, len, 'Size matches');
+    start();
+  }, onError);
+});
+

@@ -166,14 +166,25 @@ Utility methods
 The library contains a few utility methods to help you out.
 
 ```javascript
-Util.strToObjectURL(binaryStr, opt_contentType);
 Util.fileToObjectURL(Blob|File);
 
-Util.toDataURL(binaryStr, contentType) // e.g. "data:application/pdf;base64,Ym9keSB7IG..."
-// For plaintext (non-binary data):
-// Util.toDataURL('body { background: green; }', 'text/css', false) == data:text/css,body { background: green; }
+Util.fileToArrayBuffer(blob, function(arrayBuffer) {
+  ...
+});
 
-Util.arrayToBinaryString(bytes); // bytes is an array, each varying from 0-255.
+var blob = Util.arrayBufferToBlob((new Uint8Array(10)).buffer, opt_contentType);
+
+Util.arrayBufferToBinaryString((new Uint8Array(10)).buffer, function(binStr) {
+  ...
+});
+
+Util.strToObjectURL(binaryStr, opt_contentType);
+
+Util.strToDataURL(binaryStr, contentType) // e.g. "data:application/pdf;base64,Ym9keSB7IG..."
+// For plaintext (non-binary data):
+// Util.strToDataURL('body { background: green; }', 'text/css', false) == data:text/css,body { background: green; }
+
+Util.arrayToBinaryString(bytes); // bytes is an Array, each varying from 0-255.
 
 Util.getFileExtension('myfile.txt') == '.txt'
 
