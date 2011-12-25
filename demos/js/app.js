@@ -156,7 +156,7 @@ function openFS() {
     logger.log(fs.root.toURL());
     logger.log('<p>Opened: ' + fs.name, + '</p>');
 
-    setCwd(''); // Display current path as root.
+    setCwd('/'); // Display current path as root.
     refreshFolder();
     openFsButton.innerHTML = '<div></div>';
     openFsButton.classList.add('fakebutton');
@@ -165,9 +165,22 @@ function openFS() {
 }
 
 function setCwd(path) {
-  var prefix = filer.type == window.TEMPORARY ?  'temporary' : 'persistent';
-  path = path == '..' ? '' : path;
-  document.querySelector('#cwd').value = '/' + prefix + path;
+  var cwd = document.querySelector('#cwd').value;
+  var rootPath = filer.pathToFilesystemURL('/');
+
+  if (path == '/' || (path == '..' && (rootPath == cwd))) {
+    document.querySelector('#cwd').value = filer.pathToFilesystemURL('/');
+    return;
+  } else if (path == '..') {
+    var parts = cwd.split('/');
+    parts.pop();
+    path = parts.join('/');
+    if (path == rootPath.substring(0, rootPath.length - 1)) {
+      path += '/';
+    }
+  }
+
+  document.querySelector('#cwd').value = filer.pathToFilesystemURL(path);
 }
 
 function mkdir(name, opt_callback) {

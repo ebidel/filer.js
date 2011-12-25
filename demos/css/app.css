@@ -355,7 +355,7 @@ img.download {
 .error::before {
   content: 'Error: ';
 }
-.active {
+header .active {
   text-decoration: underline;
 }
 #log {
