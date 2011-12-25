@@ -44,42 +44,47 @@ Other:
 - Chrome Frame
 -->
 
-<div id="container">
+<div id="container" class="offscreen">
 <header>
   <img src="images/icons/favicon.png" alt="HTML5 Filesystem Playground" title="HTML5 Filesystem Playground">
   <h1>HTML5 <a href="http://www.html5rocks.com/tutorials/file/filesystem/" target="_blank">Filesystem</a> Playground</h1>
   <div>
-    <span>Display as: <a href="javascript:" onclick="display(this, 'list')">list</a> / <a href="javascript:" onclick="display(this, 'large')">icons</a></span>
     <span><input type="checkbox" onclick="toggleLog()" id="toggle-log"><label for="toggle-log">Show log</label></span>
-    <button id="openFsButton" onclick="refreshFolder()" alt="Refresh view" title="Refresh view">Open file system</button>
-    <input type="file" class="button" webkitdirectory disabled alt="Import directory into the current folder" title="Import directory into the current folder">
-    <select id="entry-type" title="Select folder or file to create">
-      <option value="dir">Directory</option>
-      <option value="file">File</option>
-    <select>
-    <input type="text" id="entry-name" placeholder="test.txt / foldername"/>
-    <button onclick="createNewEntry()">Create</button>
+    <span>Display as: <a href="javascript:" data-display-type="list" onclick="display(this, 'list')">list</a> / <a href="javascript:" data-display-type="icons" onclick="display(this, 'large')" class="active">icons</a></span>
+    <span>
+      <input type="file" class="button" webkitdirectory disabled alt="Import directory into the current folder" title="Import directory into the current folder">
+    </span>
+    <span>
+      <input type="text" id="entry-name" placeholder="test.txt / foldername"/>
+      <select id="entry-type" title="Select folder or file to create">
+        <option value="dir">Directory</option>
+        <option value="file">File</option>
+      </select>
+      <button onclick="createNewEntry()">Create</button>
+    </span>
   </div>
 </header>
 <section>
   <div id="errors" class="error"></div>
   <div style="display:-webkit-flexbox;margin: 25px 0 15px 0;">
-    <div>
+    <div style="width: -webkit-flex(50%);">
       <input type="text" id="cwd" disabled alt="Current directory path" title="Current directory path">
+      <button id="openFsButton" onclick="refreshFolder()" alt="Refresh view" title="Refresh view">Open file system</button>
     </div>
-    <div style="width: -webkit-flex(50%);text-align:right;">
+    <div style="width:-webkit-flex(50%);text-align:right;color:#999">
       Tip: drag in files from the desktop to import them.
     </div>
   </div>
   <div id="files" class="large"><ul></ul></div>
   <div id="file-info"></div>
 </section>
-<section>
+<section style="clear:both">
   <div id="log">
     <button onclick="logger.clear()">Clear</button>
     <div></div>
   </div>
 </section>
+<footer></footer>
 </div>
 <script src="../src/filer.js" defer></script>
 <script src="js/logger.js" defer></script>

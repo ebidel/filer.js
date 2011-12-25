@@ -9,15 +9,10 @@ var PREVIEWABLE_FILES = [
 ];
 
 var logger = new Logger('#log div');
-var dnd = new DnDFileController('body', function(files) {
-  Util.toArray(files).forEach(function(file, i) {
-    writeFile(file.name, file);
-  });
-});
-
 var filer = new Filer();
 
 var entries = []; // Cache of current working directory's entries.
+var currentLi = 1;
 
 // =============================================================================
 var filePreview = document.querySelector('#file-info');
@@ -26,33 +21,6 @@ var fileList = filesContainer.querySelector('ul');
 var openFsButton = document.querySelector('#openFsButton');
 var errors = document.querySelector('#errors');
 var importButton = document.querySelector('[type="file"]');
-
-importButton.addEventListener('change', function(e) {
-  var files = e.target.files;
-  if (files.length) {
-    var count = 0;
-    Util.toArray(files).forEach(function(file, i) {
-
-      var folders = file.webkitRelativePath.split('/');
-      folders = folders.slice(0, folders.length - 1);
-
-      // Add each directory. If it already exists, then a noop.
-      mkdir(folders.join('/'), function(dirEntry) {
-        var path = file.webkitRelativePath;
-
-        ++count;
-
-        // Write each file by it's path. Skipt '/.' (which is a directory).
-        if (path.lastIndexOf('/.') !=  path.length - 2) {
-          writeFile(path, file, false);
-          if (count == files.length) {
-            filer.ls('.', renderEntries, onError); // Rerender view on final file.
-          }
-        }
-      });
-    });
-  }
-}, false);
 
 function createNewEntry() {
   var type = document.querySelector('#entry-type').value;
@@ -85,10 +53,16 @@ function refreshFolder(e) {
   }
 }
 function display(el, type) {
+  Util.toArray(document.querySelectorAll('[data-display-type]')).forEach(function(el, i) {
+    el.classList.remove('active');
+  });
+
   if (type == 'list') {
     filesContainer.classList.remove('large');
+    document.querySelector('[data-display-type="list"]').classList.add('active');
   } else {
     filesContainer.classList.add('large');
+    document.querySelector('[data-display-type="icons"]').classList.add('active');
   }
 }
 
@@ -117,75 +91,6 @@ function click(el) {
   evt.initEvent('click', false, false);
   el.dispatchEvent(evt);
 }
-
-var currentLi = 1;
-
-document.addEventListener('keydown', function(e) {
-  var target = e.target;
-
-  // Prevent enter key from inserting carriage return in the contenteditable
-  // file/folder renaming.
-  if (target.isContentEditable && 'filename' in target.dataset) {
-    if (e.keyCode == 13) { // Enter
-      e.preventDefault();
-      e.stopPropagation();
-      target.blur();
-    }
-    return;
-  }
-
-  var active = document.querySelector('#files li.on');
-
-  if (e.keyCode == 27) { // ESC
-    filePreview.classList.remove('show');
-    filePreview.innerHTML = '';
-
-    if (active) {
-      active.classList.remove('on');
-    }
-
-    toggleLog(true);
-
-    e.preventDefault();
-    e.stopPropagation();
-    return;
-  }
-
-  if (target.nodeName != 'INPUT') {
-    if (e.keyCode == 8) { // Backspace.
-      if (active) {
-        click(active.querySelector('a[data-remove-link]'));
-      }
-      e.preventDefault();
-      return;
-    } else if (e.keyCode == 13) {  // Enter
-      if (active) {
-        if (active.querySelector('.folder')) {
-          currentLi = 1; // reset current active to first item in current folder.
-        }
-        click(active.querySelector('a[data-preview-link]') || active.querySelector('img'));
-        e.preventDefault();
-        return;
-      }
-    }
-  }
-
-  if (active) {
-    active.classList.remove('on');
-  }
-
-  var count = entries.length + 1;
-
-  if (e.keyCode == 39 || e.keyCode == 40) { // Right/down arrow.
-    currentLi = currentLi == count ? 1 : ++currentLi;
-    document.querySelector('#files li:nth-of-type(' + currentLi + ')').classList.toggle('on');
-    e.preventDefault();
-  } else if (e.keyCode == 37 || e.keyCode == 38) { // Left/up arrow.
-    currentLi = currentLi == 1 ? count : --currentLi;
-    document.querySelector('#files li:nth-of-type(' + currentLi + ')').classList.toggle('on');
-    e.preventDefault();
-  }
-}, false);
 
 
 function constructEntryHTML(entry, i) {
@@ -441,3 +346,116 @@ function readFile(i) {
     logger.log('<p class="error">' + e + '</p>');
   }
 }
+
+function onKeydown(e) {
+  var target = e.target;
+
+  // Prevent enter key from inserting carriage return in the contenteditable
+  // file/folder renaming.
+  if (target.isContentEditable && 'filename' in target.dataset) {
+    if (e.keyCode == 13) { // Enter
+      e.preventDefault();
+      e.stopPropagation();
+      target.blur();
+    }
+    return;
+  }
+
+  var active = document.querySelector('#files li.on');
+
+  if (e.keyCode == 27) { // ESC
+    filePreview.classList.remove('show');
+    filePreview.innerHTML = '';
+
+    if (active) {
+      active.classList.remove('on');
+    }
+
+    toggleLog(true);
+
+    e.preventDefault();
+    e.stopPropagation();
+    return;
+  }
+
+  if (target.nodeName != 'INPUT') {
+    if (e.keyCode == 8) { // Backspace.
+      if (active) {
+        click(active.querySelector('a[data-remove-link]'));
+      }
+      e.preventDefault();
+      return;
+    } else if (e.keyCode == 13) {  // Enter
+      if (active) {
+        if (active.querySelector('.folder')) {
+          currentLi = 1; // reset current active to first item in current folder.
+        }
+        click(active.querySelector('a[data-preview-link]') || active.querySelector('img'));
+        e.preventDefault();
+        return;
+      }
+    }
+  }
+
+  if (active) {
+    active.classList.remove('on');
+  }
+
+  var count = entries.length + 1;
+
+  if (e.keyCode == 39 || e.keyCode == 40) { // Right/down arrow.
+    currentLi = currentLi == count ? 1 : ++currentLi;
+    document.querySelector('#files li:nth-of-type(' + currentLi + ')').classList.toggle('on');
+    e.preventDefault();
+  } else if (e.keyCode == 37 || e.keyCode == 38) { // Left/up arrow.
+    currentLi = currentLi == 1 ? count : --currentLi;
+    document.querySelector('#files li:nth-of-type(' + currentLi + ')').classList.toggle('on');
+    e.preventDefault();
+  }
+}
+
+function onImport(e) {
+  var files = e.target.files;
+  if (files.length) {
+    var count = 0;
+    Util.toArray(files).forEach(function(file, i) {
+
+      var folders = file.webkitRelativePath.split('/');
+      folders = folders.slice(0, folders.length - 1);
+
+      // Add each directory. If it already exists, then a noop.
+      mkdir(folders.join('/'), function(dirEntry) {
+        var path = file.webkitRelativePath;
+
+        ++count;
+
+        // Write each file by it's path. Skipt '/.' (which is a directory).
+        if (path.lastIndexOf('/.') !=  path.length - 2) {
+          writeFile(path, file, false);
+          if (count == files.length) {
+            filer.ls('.', renderEntries, onError); // Rerender view on final file.
+          }
+        }
+      });
+    });
+  }
+}
+
+function addListeners() {
+  importButton.addEventListener('change', onImport, false);
+  document.addEventListener('keydown', onKeydown, false);
+
+  var dnd = new DnDFileController('body', function(files) {
+    Util.toArray(files).forEach(function(file, i) {
+      writeFile(file.name, file);
+    });
+  });
+}
+
+window.addEventListener('DOMContentLoaded', function(e) {
+  addListeners();
+}, false);
+
+window.addEventListener('load', function(e) {
+  document.querySelector('.offscreen').classList.remove('offscreen');
+}, false);
