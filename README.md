@@ -74,6 +74,13 @@ function onError(e) {
 Examples
 ============
 
+General rule of thumb
+---------------------
+
+For versatility, the library accepts paths to files or directories as string
+arguments (a path) or as filesystem URLs. It also can take the
+`FileEntry`/`DirectoryEntry` object representing the file/directory.
+
 ls()
 -----
 
@@ -82,31 +89,27 @@ ls()
 The first arg is a path to a directory:
 
 ```javascript
+// Pass a path.
+filer.ls('/', function(entries) {
+  // entries in the root directory.
+}, onError);
+
 filer.ls('.', function(entries) {
   // entries in the current working directory.
 }, onError);
-```
 
-```javascript
 filer.ls('path/to/some/dir/', function(entries) {
   // entries in "path/to/some/dir/"
 }, onError);
-```
 
-For versatility, the library accepts paths to files and directories as string
-values or as `FileEntry`/`DirectoryEntry` objects. For example, you can pass a
-`DirectorEntry` to `ls()`:
-
-```javascript
-filer.ls(filer.fs.root, function(entries) {
-  // entries in the root directory.
+// Pass a filesystem: URL.
+var fsURL = filer.fs.root.toURL(); // e.g. 'filesystem:http://example.com/temporary/';
+filer.ls(fsURL, function(entries) {
+  // entries in the root folder.
 }, onError);
-```
 
-which equivalent to:
-
-```javascript
-filer.ls('/', function(entries) {
+// Pass a DirectorEntry.
+filer.ls(filer.fs.root, function(entries) {
   // entries in the root directory.
 }, onError);
 ```
@@ -116,14 +119,20 @@ cd()
 
 *Allows you to change into another directory.*
 
-When using `cd()`, future operations are treated relative to the new directory.
-As a convenience, the success callback is passed the `DirectoryEntry` changed
-into.
+This is a convenience method. When using `cd()`, future operations are treated
+relative to the new directory. The success callback is passed the `DirectoryEntry`
+changed into.
 
 ```javascript
 // Passing a path.
 filer.cd('/path/to/folder', function(dirEntry) {
   ...
+}, onError);
+
+// Passing a filesystem: URL.
+var fsURL = filer.fs.root.toURL(); // e.g. 'filesystem:http://example.com/temporary/';
+filer.cd(fsURL + 'myDir', function(dirEntry) {
+  // cwd becomes /myDir.
 }, onError);
 
 // Passing a DirectoryEntry.
@@ -133,6 +142,29 @@ filer.cd(dirEntry, function(dirEntry2) {
 
 filer.cd('/path/to/folder'); // Both callbacks are optional.
 ```
+
+create()
+-----
+
+*Creates an empty file.*
+
+`create()` creates an empty file in the current working directory. If you wish
+to write data to a file, see the `write()` method.
+
+```javascript
+filer.create('myFile.txt', false, function(fileEntry) {
+  // fileEntry.name == 'myFile.txt'
+}, onError);
+
+filer.create('/path/to/some/dir/myFile.txt', false, function(fileEntry) {
+  // fileEntry.fullPath == '/path/to/some/dir/myFile.txt'
+}, onError);
+
+filer.create('myFile.txt'); // Both callbacks are optional.
+```
+
+The second (optional) argument is a boolean. Setting it to true throws an error
+if the file you're trying to create already exists.
 
 mkdir()
 -----
@@ -161,6 +193,42 @@ filer.mkdir('music/genres/jazz/', false, function(dirEntry) {
 The second argument to `mkdir()` a boolean indicating whether or not an error
 should be thrown if the directory already exists. The last two are a success
 callback and optional error callback.
+
+rm()
+-----
+
+*Removes a file or directory.*
+
+```javascript
+TODO
+```
+
+cp()
+-----
+
+*Copies a file or directory.*
+
+```javascript
+TODO
+```
+
+rename()
+-----
+
+*Renames a file or directory.*
+
+```javascript
+TODO
+```
+
+write()
+-----
+
+*Writes content to a file.*
+
+```javascript
+TODO
+```
 
 Utility methods
 ============
