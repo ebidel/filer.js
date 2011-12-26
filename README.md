@@ -86,7 +86,8 @@ ls()
 
 *List the contents of a directory.*
 
-The first arg is a path to a directory:
+The first arg is a path, filesystem URL, or DirectoryEntry to return the contents
+for. The second and third arguments, are success and error callbacks, respectively.
 
 ```javascript
 // Pass a path.
@@ -156,11 +157,11 @@ filer.create('myFile.txt', false, function(fileEntry) {
   // fileEntry.name == 'myFile.txt'
 }, onError);
 
-filer.create('/path/to/some/dir/myFile.txt', false, function(fileEntry) {
+filer.create('/path/to/some/dir/myFile.txt', true, function(fileEntry) {
   // fileEntry.fullPath == '/path/to/some/dir/myFile.txt'
 }, onError);
 
-filer.create('myFile.txt'); // Both callbacks are optional.
+filer.create('myFile.txt'); // Last 3 args are optional.
 ```
 
 The second (optional) argument is a boolean. Setting it to true throws an error
@@ -199,8 +200,25 @@ rm()
 
 *Removes a file or directory.*
 
+If you're removing a directory, it is removed recursively. 
+
 ```javascript
-TODO
+filer.rm('myFile.txt', function() {
+  ...
+}, onError);
+
+filer.rm('/path/to/some/someFile.txt', function() {
+  ...
+}, onError);
+
+var fsURL = filer.pathToFilesystemURL('/path/to/some/directory');
+filer.rm(fsURL, function() {
+  ...
+}, onError);
+
+filer.rm(directorEntry, function() {
+  ...
+}, onError);
 ```
 
 cp()
@@ -208,8 +226,44 @@ cp()
 
 *Copies a file or directory.*
 
+The first argument to `cp()` is the source file/directory you wish to copy,
+followed by the destination folder for the source to be copied into.
+
+Note: The src and dest arguments need to be the same type. For example, if pass
+a string path for the first argument, the destination cannot be a FileEntry.
+It must be a string path (or filesystem URL) as well.
+
 ```javascript
-TODO
+// Pass string paths.
+filer.cp('myFile.txt', '/path/to/other/folder', null, function(entry) {
+  // entry.fullPath == '/path/to/other/folder/myFile.txt'
+}, onError);
+
+// Pass filesystem URLs.
+var srcFsURL = 'filesystem:http://example.com/temporary/myDir';
+var destFsURL = 'filesystem:http://example.com/temporary/anotherDir';
+filer.cp(srcFsURL, destFsURL, null, function(entry) {
+  // filer.pathToFilesystemURL(entry.fullPath) == 'filesystem:http://example.com/temporary/anotherDir/myDir'
+}, onError);
+
+// Pass Entry objects.
+filer.cp(srcEntry, destinationFolderEntry, null, function(entry) {
+  ...
+}, onError);
+
+// Mixing string paths with filesystem URLs work too:
+filer.cp(srcEntry.toURL(), '/myDir', null, function(entry) {
+  ...
+}, onError);
+```
+
+If you wish to copy the entry under a new name, specify the third newName argument:
+
+```javascript
+// Copy myFile.txt to myFile2.txt in the current directory.
+filer.cp('myFile.txt', '.', 'myFile2.txt', function(entry) {
+  // entry.name == 'myFile2.txt'
+}, onError);
 ```
 
 rename()

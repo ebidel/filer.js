@@ -211,6 +211,7 @@ var Filer = new function() {
   var FS_INIT_ERROR_MSG = 'Filesystem has not been initialized.';
   var NOT_IMPLEMENTED_MSG = 'Not implemented.';
   var NOT_A_DIRECTORY = 'Path was not a directory.';
+  var INCORRECT_ARGS = 'These method arguments are not supported.';
   var FS_URL_SCHEME = 'filesystem:';
   var DEFAULT_FS_SIZE = 1024 * 1024; // 1MB.
 
@@ -590,7 +591,7 @@ var Filer = new function() {
    *
    * @param {string|FileEntry|DirectoryEntry} entryOrPath The file or directory
    *     to remove. If entry is a DirectoryEntry, its contents are removed
-   *     recursively. If entry is a string, a path or filesystem: URL is
+   *     recursively. If entryOrPath is a string, a path or filesystem: URL is
    *     accepted.
    * @param {Function} successCallback Zero arg callback invoked on
    *     successful removal.
@@ -673,6 +674,10 @@ var Filer = new function() {
                                 opt_errorHandler) {
     if (!fs_) {
       throw new Error(FS_INIT_ERROR_MSG);
+    }
+
+    if (typeof src != typeof dest) {
+      throw new Error(INCORRECT_ARGS);
     }
 
     var newName = opt_newName || null;

@@ -435,7 +435,7 @@ test('rm()', 6, function() {
   }, onError);
 });
 
-test('cp()', 14, function() {
+test('cp()', 20, function() {
   var filer = this.filer;
   var fileName = this.FILE_NAME + '_cp()';
   var folderName = this.FOLDER_NAME + '_cp()';
@@ -484,7 +484,7 @@ test('cp()', 14, function() {
 
   stop();
   var fileName2 = fileName + '_cp()2';
-  var dupfileName2 = fileName2 + '_dup';
+  var dupfileName2 = fileName2 + '_dup2';
   filer.create(fileName2, false, function(fileEntry) {
     filer.cp(fileEntry, filer.fs.root, dupfileName2, function(entry) {
       ok(entry.isFile, 'Copied entry is a DirectoryEntry');
@@ -500,7 +500,7 @@ test('cp()', 14, function() {
 
   stop();
   var folderName3 = this.FOLDER_NAME + '_cp()3';
-  var srcName = folderName3 + '_src';
+  var srcName = folderName3 + '_src3';
   filer.mkdir(folderName3, false, function(destEntry) {
     filer.mkdir(srcName, false, function(srcEntry) {
       filer.cp(srcEntry, destEntry, null, function(entry) {
@@ -519,7 +519,7 @@ test('cp()', 14, function() {
 
   stop();
   var fileName3 = fileName + '_cp()3';
-  var srcFileName3 = fileName3 + '_src';
+  var srcFileName3 = fileName3 + '_src3';
   filer.mkdir(fileName3, false, function(destEntry) {
     filer.create(srcFileName3, false, function(srcEntry) {
       filer.cp(srcEntry, destEntry, null, function(entry) {
@@ -536,19 +536,43 @@ test('cp()', 14, function() {
     }, onError)
   }, onError);
 
+  stop();
+  var folderName4 = this.FOLDER_NAME + '_cp()4';
+  var srcName4 = folderName4 + '_src4';
+  filer.mkdir(folderName4, false, function(destEntry) {
+    filer.mkdir(srcName4, false, function(srcEntry) {
+      filer.cp(srcEntry.toURL(), destEntry.toURL(), null, function(entry) {
+        ok(entry.isDirectory, 'Copied entry is a DirectoryEntry');
+        equals(entry.name, srcName4, 'Copied folder into another dir. src and dest were filesystem URLs.');
+        equals(entry.fullPath, '/' + folderName4 + '/' + srcName4,
+               'Moved folder into another dir. fullPath is correct');
+        filer.rm(folderName4, function() {
+          filer.rm(srcName4, function() {
+            start();
+          }, onError);
+        }, onError);
+      }, onError);
+    }, onError)
+  }, onError);
 
-// test strings
-// test filesystem urls
-
-/*
-  // Stall clean up for a bit so all tests have run.
-  setTimeout(function() {
-    stop();
-    filer.rm(folderName, function() {
-      start();
-    }, onError);
-  }, 500);
-*/
+  stop();
+  var folderName5 = this.FOLDER_NAME + '_cp()5';
+  var srcName5 = this.FILE_NAME + '_src5';
+  filer.mkdir(folderName5, false, function(destEntry) {
+    filer.create(srcName5, false, function(srcEntry) {
+      filer.cp(srcEntry.fullPath, destEntry.fullPath, null, function(entry) {
+        ok(entry.isFile, 'Copied entry is a FileEntry');
+        equals(entry.name, srcName5, 'Copied file into another dir. src and dest were paths.');
+        equals(entry.fullPath, '/' + folderName5 + '/' + srcName5,
+               'Moved file into another dir. fullPath is correct');
+        filer.rm(folderName5, function() {
+          filer.rm(srcName5, function() {
+            start();
+          }, onError);
+        }, onError);
+      }, onError);
+    }, onError)
+  }, onError);
 
 });
 
