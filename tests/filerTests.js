@@ -224,7 +224,7 @@ test('mkdir()', 7, function() {
 
 });
 
-test('ls()', 6, function() {
+test('ls()', 7, function() {
   var filer = this.filer;
 
   ok(filer.isOpen, 'FS opened');
@@ -257,6 +257,15 @@ test('ls()', 6, function() {
     start();
   });
 
+  stop();
+  filer.ls(filer.fs.root.toURL(), function(entries) {
+    ok(true, 'filesystem URL as argument');
+    start();
+  }, function(e) {
+    ok(false);
+    start();
+  });
+
   /* //Try to create a folder without first calling init().
   var filer2 = new Filer();
   try {
@@ -271,7 +280,7 @@ test('ls()', 6, function() {
 
 });
 
-test('cd()', 5, function() {
+test('cd()', 6, function() {
   var filer = this.filer;
   var folderName = this.FOLDER_NAME + Date.now();
 
@@ -285,6 +294,15 @@ test('cd()', 5, function() {
   filer.mkdir(folderName, false, function(dirEntry) {
     filer.cd(folderName, function(dirEntry2) {
       ok(true, 'cd with path name as an argument.');
+      start();
+    }, onError);
+  });
+
+  stop();
+  filer.mkdir(folderName, false, function(dirEntry) {
+    var fsURL = filer.pathToFilesystemURL(dirEntry.fullPath);
+    filer.cd(fsURL, function(dirEntry2) {
+      ok(true, 'cd with path arg as a filesystem URL.');
       start();
     }, onError);
   });
@@ -319,7 +337,7 @@ test('cd()', 5, function() {
   // TODO: test optional callback args to cd().
 });
 
-test('create()', 3, function() {
+test('create()', 4, function() {
   var filer = this.filer;
   var fileName = this.FILE_NAME + Date.now();
 
@@ -339,6 +357,15 @@ test('create()', 3, function() {
     start();
   });
 
+  stop();
+  filer.create(fileName, null, function(entry) {
+    ok(false);
+    start();
+  }, function(e) {
+    ok(true, "Optional exclusive argument didn't default to true.");
+    start();
+  });
+
   // Stall clean up for a bit so all tests have run.
   setTimeout(function() {
     stop();
@@ -348,7 +375,7 @@ test('create()', 3, function() {
   }, 500);
 });
 
-test('rm()', 5, function() {
+test('rm()', 6, function() {
   var filer = this.filer;
   var fileName = this.FILE_NAME + Date.now();
   var folderName = this.FOLDER_NAME + Date.now();
@@ -396,12 +423,133 @@ test('rm()', 5, function() {
       start();
     }, onError);
   }, onError);
+
+  stop();
+  var folderName3 = folderName + '3';
+  filer.mkdir(folderName3, false, function(entry) {
+    var fsURL = filer.pathToFilesystemURL(entry.fullPath);
+    filer.rm(fsURL, function() {
+      ok(true, folderName3 + ' removed dir by filesystem URL.');
+      start();
+    }, onError);
+  }, onError);
 });
 
-test('cp()', 0, function() {
+test('cp()', 14, function() {
   var filer = this.filer;
-  var fileName = this.FILE_NAME;
-  var folderName = this.FOLDER_NAME + Date.now();
+  var fileName = this.FILE_NAME + '_cp()';
+  var folderName = this.FOLDER_NAME + '_cp()';
+
+  stop();
+  filer.mkdir(folderName, false, function(dirEntry) {
+    filer.cp(dirEntry, filer.fs.root, null, function(entry) {
+      ok(false, 'Attempt to copy file in same folder without renaming it.');
+      start();
+    }, function(e) {
+      ok(true, 'Error thrown for copying directory in same folder without renaming it.');
+      filer.rm(folderName, function() {
+        start();
+      }, onError);
+    })
+  }, onError);
+
+  stop();
+  filer.create(fileName, false, function(fileEntry) {
+    filer.cp(fileEntry, filer.fs.root, null, function(entry) {
+      ok(false, 'Attempt to copy file in same folder without renaming it.');
+      start();
+    }, function(e) {
+      ok(true, 'Error thrown for copying file in same folder without renaming it.');
+      filer.rm(fileName, function() {
+        start();
+      }, onError);
+    })
+  }, onError);
+
+  stop();
+  var folderName2 = this.FOLDER_NAME + '_cp()2';
+  var dupName2 = folderName2 + '_dup';
+  filer.mkdir(folderName2, false, function(dirEntry) {
+    filer.cp(dirEntry, filer.fs.root, dupName2, function(entry) {
+      ok(entry.isDirectory, 'Copied entry is a DirectoryEntry');
+      ok(true, 'Copied (renamed) folder in same dir. Args were Entry objects.');
+      equals(entry.name, dupName2, 'Moved entry name correct');
+      filer.rm(folderName2, function() {
+        filer.rm(dupName2, function() {
+          start();
+        }, onError);
+      }, onError);
+    }, onError)
+  }, onError);
+
+  stop();
+  var fileName2 = fileName + '_cp()2';
+  var dupfileName2 = fileName2 + '_dup';
+  filer.create(fileName2, false, function(fileEntry) {
+    filer.cp(fileEntry, filer.fs.root, dupfileName2, function(entry) {
+      ok(entry.isFile, 'Copied entry is a DirectoryEntry');
+      ok(true, 'Copied (renamed) file in same dir. Args were Entry objects.');
+      equals(entry.name, dupfileName2, 'Moved entry name correct');
+      filer.rm(fileName2, function() {
+        filer.rm(dupfileName2, function() {
+          start();
+        }, onError);
+      }, onError);
+    }, onError)
+  }, onError);
+
+  stop();
+  var folderName3 = this.FOLDER_NAME + '_cp()3';
+  var srcName = folderName3 + '_src';
+  filer.mkdir(folderName3, false, function(destEntry) {
+    filer.mkdir(srcName, false, function(srcEntry) {
+      filer.cp(srcEntry, destEntry, null, function(entry) {
+        ok(entry.isDirectory, 'Copied entry is a DirectoryEntry');
+        equals(entry.name, srcName, 'Copied folder into another dir. src and dest were DirectoryEntry.');
+        equals(entry.fullPath, '/' + folderName3 + '/' + srcName,
+               'Moved folder into another dir. fullPath is correct');
+        filer.rm(folderName3, function() {
+          filer.rm(srcName, function() {
+            start();
+          }, onError);
+        }, onError);
+      }, onError);
+    }, onError)
+  }, onError);
+
+  stop();
+  var fileName3 = fileName + '_cp()3';
+  var srcFileName3 = fileName3 + '_src';
+  filer.mkdir(fileName3, false, function(destEntry) {
+    filer.create(srcFileName3, false, function(srcEntry) {
+      filer.cp(srcEntry, destEntry, null, function(entry) {
+        ok(entry.isFile, 'Copied entry is a FileEntry');
+        equals(entry.name, srcFileName3, 'Copied file into another dir. Args were Entry objects.');
+        equals(entry.fullPath, '/' + fileName3 + '/' + srcFileName3,
+               'Moved file into another dir. fullPath is correct');
+        filer.rm(fileName3, function() {
+          filer.rm(srcFileName3, function() {
+            start();
+          }, onError);
+        }, onError);
+      }, onError);
+    }, onError)
+  }, onError);
+
+
+// test strings
+// test filesystem urls
+
+/*
+  // Stall clean up for a bit so all tests have run.
+  setTimeout(function() {
+    stop();
+    filer.rm(folderName, function() {
+      start();
+    }, onError);
+  }, 500);
+*/
+
 });
 
 /*test('rename()', 1, function() {
