@@ -365,8 +365,8 @@ var Filer = new function() {
    *
    * @param {string|DirectoryEntry} dirEntryOrPath A path relative to the
    *     current working directory. In most cases that is the root entry, unless
-   *     cd() has been called. A DirectoryEntry can also be passed, in which
-   *     case, its contents will be returned.
+   *     cd() has been called. A DirectoryEntry or filesystem URL can also be
+   *     passed, in which case, the folder's contents will be returned.
    * @param {Function} successCallback Success handler passed an Array<Entry>.
    * @param {Function=} opt_errorHandler Optional error callback.
    */
@@ -404,10 +404,12 @@ var Filer = new function() {
       readEntries();
     };
 
-    if (dirEntryOrPath.isDirectory) {
+    if (dirEntryOrPath.isDirectory) { // passed a DirectoryEntry.
       callback(dirEntryOrPath);
-    } else {
-      // We were passed a path. Look up DirectoryEntry and proceeed.
+    } else if (isFsURL_(dirEntryOrPath)) { // passed a filesystem URL.
+      getEntry_(callback, pathToFsURL_(dirEntryOrPath));
+    } else { // Passed a path. Look up DirectoryEntry and proceeed.
+      // TODO: Find way to use getEntry_(callback, dirEntryOrPath); with cwd_.
       cwd_.getDirectory(dirEntryOrPath, {}, callback, opt_errorHandler);
     }
   };
@@ -588,7 +590,8 @@ var Filer = new function() {
    *
    * @param {string|FileEntry|DirectoryEntry} entryOrPath The file or directory
    *     to remove. If entry is a DirectoryEntry, its contents are removed
-   *     recursively.
+   *     recursively. If entry is a string, a path or filesystem: URL is
+   *     accepted.
    * @param {Function} successCallback Zero arg callback invoked on
    *     successful removal.
    * @param {Function=} opt_errorHandler Optional error callback.
@@ -607,21 +610,19 @@ var Filer = new function() {
       }
     };
 
-    if (!(entryOrPath.isFile || entryOrPath.isDirectory)) {
-      self.resolveLocalFileSystemURL(
-           pathToFsURL_(entryOrPath), function(entry) {
-        removeIt(entry);
-      }, opt_errorHandler);
+    if (entryOrPath.isFile || entryOrPath.isDirectory) {
+      removeIt(entryOrPath);
     } else {
-      removeIt(entryOrPath); // entryOrPath is a DirectoryEntry or FileEntry.
+      getEntry_(removeIt, entryOrPath);
     }
   };
 
   /**
    * Changes the current working directory.
    *
-   * @param {string|DirectoryEntry} dirEntryOrPath A path relative to the
-   *     current working directory to move into or a DirectoryEntry.
+   * @param {string|DirectoryEntry} dirEntryOrPath A DirectoryEntry to move into
+   *     or a path relative to the current working directory. A filesystem: URL
+   *     is also accepted
    * @param {Function=} opt_successCallback Optional success callback, which is
    *     passed the DirectoryEntry of the new current directory.
    * @param {Function=} opt_errorHandler Optional error callback.
@@ -629,42 +630,43 @@ var Filer = new function() {
   Filer.prototype.cd = function(dirEntryOrPath, opt_successCallback,
                                 opt_errorHandler) {
     if (!fs_) {
-     throw new Error(FS_INIT_ERROR_MSG);
+      throw new Error(FS_INIT_ERROR_MSG);
     }
 
     if (dirEntryOrPath.isDirectory) {
       cwd_ = dirEntryOrPath;
       opt_successCallback && opt_successCallback(cwd_);
     } else {
-      self.resolveLocalFileSystemURL(pathToFsURL_(dirEntryOrPath),
-        function(dirEntry) {
-          if (dirEntry.isDirectory) {
-            cwd_ = dirEntry;
-            opt_successCallback && opt_successCallback(cwd_);
+      // Build a filesystem: URL manually if we need to.
+      var dirEntryOrPath = pathToFsURL_(dirEntryOrPath);
+
+      getEntry_(function(dirEntry) {
+        if (dirEntry.isDirectory) {
+          cwd_ = dirEntry;
+          opt_successCallback && opt_successCallback(cwd_);
+        } else {
+          var e = new Error(NOT_A_DIRECTORY);
+          if (opt_errorHandler) {
+            opt_errorHandler(e);
           } else {
-            var e = new Error(NOT_A_DIRECTORY);
-            if (opt_errorHandler) {
-              opt_errorHandler(e);
-            } else {
-              throw e;
-            }
+            throw e;
           }
-        },
-        opt_errorHandler
-      );
+        }
+      }, dirEntryOrPath);
     }
   };
 
   /**
-    * Copies a file or entire directory.
+    * Copies a file or directory to a destination.
     *
-    * @param {string} src Relative path or file system URL of the file/directory
-    *     to copy.
-    * @param {string} dest Relative path or file system URL of the destination
-    *     directory.
+    * @param {string|FileEntry|DirectoryEntry} src The file/directory
+    *     to copy. If src is a string, a path or filesystem: URL is accepted.
+    * @param {string|DirectoryEntry} dest The directory to copy the src into.
+    *     If dest is a string, a path or filesystem: URL is accepted.
+    *     Note: dest needs to be the same type as src.
     * @param {string=} opt_newName An optional name for the copied entry.
-    * @param {Function=} opt_successCallback Optional zero arg callback invoked
-    *     on a successful copy.
+    * @param {Function=} opt_successCallback Optional callback passed the moved
+    *     entry on a successful copy.
     * @param {Function=} opt_errorHandler Optional error callback.
     */
   Filer.prototype.cp = function(src, dest, opt_newName, opt_successCallback,
@@ -675,17 +677,18 @@ var Filer = new function() {
 
     var newName = opt_newName || null;
 
-    if (src.isFile || src.isDirectory) {
-      // TODO
+    if ((src.isFile || dest.isDirectory) && dest.isDirectory) {
+      src.copyTo(dest, newName, opt_successCallback, opt_errorHandler);
     } else {
       getEntry_(function(srcEntry, destDir) {
         if (!destDir.isDirectory) {
-          var e = new Error('Oops! "' + destDir.name + ' is not a directory!')
+          var e = new Error('Oops! "' + destDir.name + ' is not a directory!');
           if (opt_errorHandler) {
             opt_errorHandler(e);
           } else {
             throw e;
           }
+          return;
         }
         srcEntry.copyTo(destDir, newName, opt_successCallback,
                         opt_errorHandler);
