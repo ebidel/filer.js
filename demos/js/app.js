@@ -221,7 +221,7 @@ function cd(i, opt_callback) {
 
 function openFile(i) {
   errors.textContent = ''; // Reset errors.
-  filer.open(entries[i].name);
+  var fileWin = self.open(entries[i].toURL(), 'fileWin');
 }
 
 function newFile(name) {

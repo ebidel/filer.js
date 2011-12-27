@@ -178,7 +178,8 @@ var Util = {
    * @return {string} The file's extension.
    */
   getFileExtension: function(filename) {
-    return filename.substring(filename.lastIndexOf('.'));
+    var idx = filename.lastIndexOf('.');
+    return idx != -1 ? filename.substring(idx) : '';
   }
 };
 
@@ -526,31 +527,25 @@ var Filer = new function() {
   };
 
   /**
-   * Opens a file.
+   * Looks up and return a File for a given file entry.
    *
-   * @param {string} path The relative path of the file to open, from the
-   *     current working directory.
-   * @param {Function=} opt_successCallback Optional success callback.
-   *     If present, this callback is passed a File object. If no success
-   *     callback is passed, the file is opened in a popup window using its
-   *     filesystem: URL.
+   * @param {string|FileEntry} entryOrPath A path, filesystem URL, or FileEntry
+   *     of the file to lookup.
+   * @param {Function} successCallback Success callback passed the File object.
    * @param {Function=} opt_errorHandler Optional error callback.
    */
-  Filer.prototype.open = function(path, opt_successCallback, opt_errorHandler) {
+  Filer.prototype.open = function(entryOrPath, successCallback, opt_errorHandler) {
     if (!fs_) {
       throw new Error(FS_INIT_ERROR_MSG);
     }
 
-    cwd_.getFile(path, {}, function(fileEntry) {
-      if (opt_successCallback) {
-        fileEntry.file(function(file) {
-          opt_successCallback(file);
-        }, opt_errorHandler);
-      } else {
-        // Open popup window to the entry's filesystem: URL.
-        var fileWin = self.open(fileEntry.toURL(), 'fileWin');
-      }
-    }, opt_errorHandler);
+    if (entryOrPath.isFile) {
+      entryOrPath.file(successCallback, opt_errorHandler);
+    } else {
+      getEntry_(function(fileEntry) {
+        fileEntry.file(successCallback, opt_errorHandler);
+      }, pathToFsURL_(entryOrPath));
+    }
   };
 
   /**
@@ -700,40 +695,44 @@ var Filer = new function() {
    *
    * If the file already exists, its contents are overwritten.
    *
-   * @param {string} name The name of the file to open and write to.
+   * @param {string|FileEntry} entryOrPath A path, filesystem URL, or FileEntry
+    *     of the file to lookup.
    * @param {object} dataObj The data to write. Example:
    *     {data: string|Blob|File|ArrayBuffer, type: mimetype}
    * @param {Function} successCallback Success callback, which is passed
    *     the created FileEntry and FileWriter object used to write the data.
    * @param {Function=} opt_errorHandler Optional error callback.
    */
-  Filer.prototype.write = function(name, dataObj, successCallback,
+  Filer.prototype.write = function(entryOrPath, dataObj, successCallback,
                                    opt_errorHandler) {
     if (!fs_) {
       throw new Error(FS_INIT_ERROR_MSG);
     }
 
-    cwd_.getFile(name, {create: true, exclusive: false}, function(fileEntry) {
-
+    var writeFile_ = function(fileEntry) {
       fileEntry.createWriter(function(fileWriter) {
 
+        fileWriter.onerror = opt_errorHandler;
+
         fileWriter.onwrite = function(e) {
-          console.log('Write completed.');
+          successCallback(fileEntry, fileWriter);
         };
 
-        fileWriter.onerror = function(e) {
-          console.log('Write failed: ' + e);
-        };
-
-        /*var bb = new BlobBuilder();
+        var bb = new BlobBuilder();
         bb.append(dataObj.data);
-        //fileWriter.write(bb.getBlob(dataObj.type));*/
-        fileWriter.write(dataObj.data);
-console.log(dataObj, typeof dataObj.data)
-        successCallback(fileEntry, fileWriter);
-      }, opt_errorHandler);
+        fileWriter.write(dataObj.type ? bb.getBlob(dataObj.type) : bb.getBlob());
 
-    }, opt_errorHandler);
+      }, opt_errorHandler);
+    };
+
+    if (entryOrPath.isFile) {
+      writeFile_(entryOrPath);
+    } else if (isFsURL_(entryOrPath)) {
+      getEntry_(writeFile_, entryOrPath);
+    } else {
+      cwd_.getFile(entryOrPath, {create: true, exclusive: false}, writeFile_,
+                   opt_errorHandler);
+    }
   };
 
 

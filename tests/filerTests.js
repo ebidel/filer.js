@@ -652,15 +652,97 @@ test('mv()', 10, function() {
 });
 
 
-/*test('write()', 1, function() {
+test('open()', 3, function() {
+  var filer = this.filer;
+  var fileName = this.FILE_NAME + '_open';
+
+  stop();
+  filer.create(fileName, false, function(entry) {
+    filer.open(entry, function(file) {
+      ok(file.__proto__ == File.prototype, 'FileEntry as arg. Result is a File');
+      start();
+    }, onError);
+  }, onError);
+
+  stop();
+  filer.create(fileName, false, function(entry) {
+    filer.open(entry.fullPath, function(file) {
+      ok(file.__proto__ == File.prototype, 'path as arg. Result is a File');
+      start();
+    }, onError);
+  }, onError);
+
+  stop();
+  filer.create(fileName, false, function(entry) {
+    filer.open(entry.toURL(), function(file) {
+      ok(file.__proto__ == File.prototype, 'filesystem: URL as arg. Result is a File');
+      start();
+    }, onError);
+  }, onError);
+
+   // Stall clean up for a bit so all tests have run.
+   setTimeout(function() {
+     stop();
+     filer.rm(fileName, function() {
+       start();
+     }, onError);
+   }, 500);
 
 });
-*/
 
-/*test('open()', 1, function() {
+test('write()', 9, function() {
+  var filer = this.filer;
+  var fileName = this.FILE_NAME + '_write';
+  var data = '1234567890';
+
+  stop();
+  filer.create(fileName, false, function(entry) {
+    var bb = new BlobBuilder();
+    bb.append(data);
+    filer.write(entry, {data: bb.getBlob()}, function(fileEntry, fileWriter) {
+      ok(true, 'data as Blob accepted')
+      ok(fileEntry.isFile, 'Written file is a FileEntry');
+      filer.open(fileEntry, function(file) {
+        equals(file.size, data.length, 'size of data written is correct');
+        filer.rm(fileEntry, function() {
+          start();
+        }, onError);
+      }, onError);
+    }, onError);
+  }, onError);
+
+  stop();
+  var fileName2 = fileName + '2';
+  filer.create(fileName2, false, function(entry) {
+    filer.write(entry, {data: data}, function(fileEntry, fileWriter) {
+      ok(true, 'data as string accepted')
+      ok(fileEntry.isFile, 'Written file is a FileEntry');
+      filer.open(fileEntry, function(file) {
+        equals(file.size, data.length, 'size of data written is correct');
+        filer.rm(fileEntry, function() {
+          start();
+        }, onError);
+      }, onError);
+    }, onError);
+  }, onError);
+
+  stop();
+  var fileName3 = fileName + '3';
+  var uint8 = new Uint8Array(data.split(''));
+  filer.create(fileName3, false, function(entry) {
+    filer.write(entry, {data: uint8.buffer}, function(fileEntry, fileWriter) {
+      ok(true, 'data as ArrayBuffer accepted')
+      ok(fileEntry.isFile, 'Written file is a FileEntry');
+      filer.open(fileEntry, function(file) {
+        equals(file.size, uint8.length, 'size of data written is correct');
+        filer.rm(fileEntry, function() {
+          start();
+        }, onError);
+      }, onError);
+    }, onError);
+  }, onError);
 
 });
-*/
 
 
 module('Utils', {
@@ -672,7 +754,8 @@ module('Utils', {
   }
 });
 
-test('getFileExtension()', 4, function() {
+test('getFileExtension()', 5, function() {
+  equals(Util.getFileExtension('test'), '', 'no ex');
   equals(Util.getFileExtension('test.txt'), '.txt', 'single char');
   equals(Util.getFileExtension('test.cc'), '.cc', 'double char');
   equals(Util.getFileExtension('test.tar.gz'), '.gz', 'double extension');

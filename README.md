@@ -295,13 +295,84 @@ filer.mv('myFile.txt', './someDir'); // The new name and both callbacks are opti
 
 ```
 
+open()
+-----
+
+*Returns a File object.*
+
+```javascript
+// Pass a path.
+filer.open('myFile.txt', function(file) {
+  // Use FileReader to read file.
+  var reader = new FileReader();
+  reader.onload = function(e) {
+    ...
+  }
+  read.readAsArrayBuffer(file);
+}, onError);
+
+// Pass a filesystem URL.
+filer.open(fileEntry.toURL(), function(file) {
+  ...
+}, onError);
+
+// Pass a FileEntry.
+filer.open(fileEntry, function(file) {
+  ...
+}, onError);
+```
+
 write()
 -----
 
 *Writes content to a file.*
 
+`write()` takes a `string` (path or filesystem URL) or `FileEntry` as it's first argument.
+This is the file to write data to. If the does not exist, it is created. Otherwise,
+the file's contents are overwritten if it already exists.
+
+The second argument is an object with two properties:
+- `data`: the content to write into the file
+- `type`: optional mimetype of the content.
+
+The success callback for this method is passed the `FileEntry` for the file that
+was written to and the `FileWriter` object used to do the writing.
+
 ```javascript
-TODO
+// Write files from a file input.
+document.querySelector('input[type="file"]').onchange = function(e) {
+  var file = e.target.files[0];
+  filer.write(file.name, {data: file, type: file.type}, function(fileEntry, fileWriter) {
+    ...
+  }, onError);
+};
+
+// Create a Blob and write it out.
+var bb = new BlobBuilder();
+bb.append('body { background: red' }');
+filer.write('styles.css', {data: bb.getBlob('text/css'), type: 'text/css'},
+  function(fileEntry, fileWriter) {
+    ...
+  },
+  onError
+);
+
+// Create a typed array and write the ArrayBuffer.
+var uint8 = new Uint8Array([1,2,3,4,5]);
+filer.write(fileEntry, {data: uint8.buffer},
+  function(fileEntry, fileWriter) {
+    ...
+  },
+  onError
+);
+
+// Write string data.
+filer.write('path/to/file.txt', {data: '1234567890', type: 'text/plain'},
+  function(fileEntry, fileWriter) {
+    ...
+  },
+  onError
+);
 ```
 
 Utility methods
