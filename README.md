@@ -15,7 +15,9 @@ other languages.
 
 **Check out the [demo app](http://html5-demos.appspot.com/static/filesystem/filer.js/demos/index.html)**
 
-<img src="demos/images/demo_screenshot.png" title="Demo app screenshot" alt="Demo app screenshot">
+<a href="http://html5-demos.appspot.com/static/filesystem/filer.js/demos/index.html">
+  <img src="//github.com/ebidel/filer.js/raw/master/demos/images/demo_screenshot.png" style="border:1px solid #ccc;height:202px;width:430px;" title="Demo app screenshot" alt="Demo app screenshot">
+</a>
 
 Getting started
 =======
