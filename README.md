@@ -1,7 +1,7 @@
 filer.js
 =======
 
-filer.js is a [fully tested](master/tests) wrapper library for the [HTML5 Filesystem API](http://dev.w3.org/2009/dap/file-system/pub/FileSystem/),
+filer.js is a [welll tested](master/tests) wrapper library for the [HTML5 Filesystem API](http://dev.w3.org/2009/dap/file-system/pub/FileSystem/),
 an API which enables web applications to read and write files and folders to to
 its own sandboxed filesystem.
 
@@ -14,6 +14,8 @@ other languages.
 [2]: http://code.google.com/p/closure-library/source/browse/trunk/closure/goog/fs/fs.js
 
 **Check out the [demo app](http://html5-demos.appspot.com/static/filesystem/filer.js/demos/index.html)**
+
+<img src="demos/images/demo_screenshot.png" title="Demo app screenshot" alt="Demo app screenshot">
 
 Getting started
 =======
