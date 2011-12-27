@@ -276,7 +276,7 @@ when it is moved.
 
 ```javascript
 // Pass string paths.
-filer.mv('path/to/myfile.mp3, '/another/dir', null, function(fileEntry) {
+filer.mv('path/to/myfile.mp3', '/another/dir', null, function(fileEntry) {
   // fileEntry.fullPath == '/another/dir/myfile.mp3'
 }, onError);
 
