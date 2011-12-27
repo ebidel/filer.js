@@ -349,7 +349,7 @@ document.querySelector('input[type="file"]').onchange = function(e) {
 
 // Create a Blob and write it out.
 var bb = new BlobBuilder();
-bb.append('body { background: red' }');
+bb.append('body { background: red; }');
 filer.write('styles.css', {data: bb.getBlob('text/css'), type: 'text/css'},
   function(fileEntry, fileWriter) {
     ...
