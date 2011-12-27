@@ -131,7 +131,7 @@ module('helpers', {
   }
 });
 
-test('pathToFilesystemURL()', 5, function() {
+test('pathToFilesystemURL()', 8, function() {
   var filer = this.filer;
   var fsURL = 'filesystem:' + document.location.origin + '/temporary/';
   var path = 'test/me';
@@ -140,7 +140,12 @@ test('pathToFilesystemURL()', 5, function() {
   equals(filer.pathToFilesystemURL(fsURL), fsURL, 'filesystem URL as arg');
   equals(filer.pathToFilesystemURL(fsURL + path), fsURL + path, 'filesystem URL as arg2');
   equals(filer.pathToFilesystemURL('/' + path), fsURL + path, 'abs path as arg');
-  equals(filer.pathToFilesystemURL(path), fsURL + path, 'relative path as arg');
+  equals(filer.pathToFilesystemURL('./'), fsURL + './', './ as arg');
+  equals(filer.pathToFilesystemURL('./' + path), fsURL + './' + path, './ as arg');
+  //equals(filer.pathToFilesystemURL('..'), fsURL + '../', '.. as arg');
+  equals(filer.pathToFilesystemURL('../'), fsURL + '/../', '../ as arg');
+  equals(filer.pathToFilesystemURL('../' + path), fsURL + '../' + path, '../ as arg');
+  //equals(filer.pathToFilesystemURL(path), fsURL + path, 'relative path as arg');
 });
 
 
@@ -472,7 +477,7 @@ test('cp()', 20, function() {
   filer.mkdir(folderName2, false, function(dirEntry) {
     filer.cp(dirEntry, filer.fs.root, dupName2, function(entry) {
       ok(entry.isDirectory, 'Copied entry is a DirectoryEntry');
-      ok(true, 'Copied (renamed) folder in same dir. Args were Entry objects.');
+      ok(true, 'Copied folder in same dir. Args were Entry objects.');
       equals(entry.name, dupName2, 'Moved entry name correct');
       filer.rm(folderName2, function() {
         filer.rm(dupName2, function() {
@@ -488,7 +493,7 @@ test('cp()', 20, function() {
   filer.create(fileName2, false, function(fileEntry) {
     filer.cp(fileEntry, filer.fs.root, dupfileName2, function(entry) {
       ok(entry.isFile, 'Copied entry is a DirectoryEntry');
-      ok(true, 'Copied (renamed) file in same dir. Args were Entry objects.');
+      ok(true, 'Copied file in same dir. Args were Entry objects.');
       equals(entry.name, dupfileName2, 'Moved entry name correct');
       filer.rm(fileName2, function() {
         filer.rm(dupfileName2, function() {
@@ -576,10 +581,76 @@ test('cp()', 20, function() {
 
 });
 
-/*test('rename()', 1, function() {
+test('mv()', 10, function() {
+  var filer = this.filer;
+  var fileName = this.FILE_NAME + '_mv';
+  var folderName = this.FOLDER_NAME + '_mv';
+
+  stop();
+  var renamedFileName = fileName + '_renamed';
+  filer.create(fileName, false, function(entry) {
+    filer.mv(entry, filer.fs.root, renamedFileName, function(entry2) {
+      ok(entry2.isFile, 'Moved file is a FileEntry');
+      equals(entry2.name, renamedFileName, 'FileEntry as arg');
+      filer.rm(entry2, function() {
+        start();
+      }, onError);
+    }, onError);
+  }, onError);
+
+  stop();
+  var fileName2 = fileName + '2';
+  var renamedFileName2 = renamedFileName + '2';
+  filer.create(fileName2, false, function(entry) {
+    filer.mv(entry.name, '.', renamedFileName2, function(entry2) {
+      ok(entry2.isFile, 'Moved file is a FileEntry');
+      equals(entry2.name, renamedFileName2, 'path as arg');
+      filer.rm(entry2, function() {
+        start();
+      }, onError);
+    }, onError);
+  }, onError);
+
+  stop();
+  var renamedFolder = folderName + '_renamed';
+  filer.mkdir(folderName, false, function(entry) {
+    filer.mv(entry, filer.fs.root, renamedFolder, function(entry2) {
+      ok(entry2.isDirectory, 'Moved folder is a DirectoryEntry');
+      equals(entry2.name, renamedFolder, 'DirectoryEntry as arg');
+      filer.rm(entry2, function() {
+        start();
+      }, onError);
+    }, onError);
+  }, onError);
+
+  stop();
+  var folderName2 = folderName + '2';
+  var renamedFolder2 = renamedFolder + '2';
+  filer.mkdir(folderName2, false, function(entry) {
+    filer.mv(entry.fullPath, filer.fs.root.fullPath, renamedFolder2, function(entry2) {
+      ok(entry2.isDirectory, 'Moved folder is a DirectoryEntry');
+      equals(entry2.name, renamedFolder2, 'path as arg');
+      filer.rm(entry2, function() {
+        start();
+      }, onError);
+    }, onError);
+  }, onError);
+
+  stop();
+  var fileName3 = fileName + '3';
+  var renamedFileName3 = renamedFileName + '3';
+  filer.create(fileName3, false, function(entry) {
+    filer.mv(entry.toURL(), filer.fs.root.toURL(), renamedFileName3, function(entry2) {
+      ok(entry2.isFile, 'Moved file is a FileEntry');
+      equals(entry2.name, renamedFileName3, 'filesystem URL as arg');
+      filer.rm(entry2, function() {
+        start();
+      }, onError);
+    }, onError);
+  }, onError);
 
 });
-*/
+
 
 /*test('write()', 1, function() {
 

@@ -1,3 +1,11 @@
+var filer = new Filer();
+var logger = new Logger('#log div');
+
+var entries = []; // Cache of current working directory's entries.
+var currentLi = 1; // Keeps track of current highlighted el for keyboard nav.
+
+// If the OS doesn't reconize certain types, let's help it. These (extra) types
+// will be read as plaintext.
 var PREVIEWABLE_FILES = [
   '.as',
   '.txt',
@@ -8,13 +16,7 @@ var PREVIEWABLE_FILES = [
   '.js'
 ];
 
-var logger = new Logger('#log div');
-var filer = new Filer();
-
-var entries = []; // Cache of current working directory's entries.
-var currentLi = 1;
-
-// =============================================================================
+// Cache some frequently used DOM elements.
 var filePreview = document.querySelector('#file-info');
 var filesContainer = document.querySelector('#files');
 var fileList = filesContainer.querySelector('ul');
@@ -255,7 +257,7 @@ function writeFile(fileName, file, opt_rerender) {
 function rename(el, i) {
   errors.textContent = ''; // Reset errors.
 
-  filer.rename(entries[i], el.textContent, function(entry) {
+  filer.mv(entries[i].fullPath, '.', el.textContent, function(entry) {
     logger.log('<p>' + entries[i].name + ' renamed to ' + entry.name + '</p>');
     entries[i] = entry;
 

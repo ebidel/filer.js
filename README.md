@@ -74,8 +74,7 @@ function onError(e) {
 Examples
 ============
 
-General rule of thumb
----------------------
+## General rule of thumb
 
 For versatility, the library accepts paths to files or directories as string
 arguments (a path) or as filesystem URLs. It also can take the
@@ -266,13 +265,34 @@ filer.cp('myFile.txt', '.', 'myFile2.txt', function(entry) {
 }, onError);
 ```
 
-rename()
+mv()
 -----
 
-*Renames a file or directory.*
+*Moves a file or directory.*
+
+The first argument to move is the source file or directory to move, the second
+is a destination directory, and the third is an optional new name for the file/folder
+when it is moved.
 
 ```javascript
-TODO
+// Pass string paths.
+filer.mv('path/to/myfile.mp3, '/another/dir', null, function(fileEntry) {
+  // fileEntry.fullPath == '/another/dir/myfile.mp3'
+}, onError);
+
+// Pass a filesystem URL. This example renames file.txt to somethingElse.txt in
+// the same directory.
+filer.mv('filesystem:http://example.com/temporary/file.txt', '.', 'somethingElse.txt', function(fileEntry) {
+  // fileEntry.fullPath == '/somethingElse.txt'
+}, onError);
+
+// Pass a FileEntry or DirectoryEntry.
+filer.mv(folderEntry, destDirEntry, function(dirEntry) {
+  // folder is moved into destDirEntry
+}, onError);
+
+filer.mv('myFile.txt', './someDir'); // The new name and both callbacks are optional.
+
 ```
 
 write()

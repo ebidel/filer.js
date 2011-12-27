@@ -218,7 +218,6 @@ var Filer = new function() {
   var fs_ = null;
   var cwd_ = null;
   var isOpen_ = false;
-  var baseFsUrl_ = null;
 
   var isFsURL_ = function(path) {
     return path.indexOf(FS_URL_SCHEME) == 0;
@@ -229,13 +228,18 @@ var Filer = new function() {
   var pathToFsURL_ = function(path) {
     if (!isFsURL_(path)) {
       if (path[0] == '/') {
-        path = baseFsUrl_ + path.substring(1);
+        path = fs_.root.toURL() + path.substring(1);
       } else if (path.indexOf('./') == 0 || path.indexOf('../') == 0) {
-        path = cwd_.toURL() + '/' + path;
+        if (path == '../' && cwd_ != fs_.root) {
+          path = cwd_.toURL() + '/' + path;
+        } else {
+          path = cwd_.toURL() + path;
+        }
       } else {
-        path = cwd_.toURL() + path;
+        path = cwd_.toURL() + '/' + path;
       }
     }
+
     return path;
   };
 
@@ -271,7 +275,6 @@ var Filer = new function() {
 
     if (arguments.length == 3) {
       var dest = pathToFsURL_(destStr);
-
       self.resolveLocalFileSystemURL(src, function(srcEntry) {
         self.resolveLocalFileSystemURL(dest, function(destEntry) {
           callback(srcEntry, destEntry);
@@ -282,14 +285,60 @@ var Filer = new function() {
     }
   };
 
+  /**
+   * Copy or moves a file or directory to a destination.
+   *
+   * See public method's description (Filer.cp()) for rest of params.
+   * @param {Boolean=} opt_deleteOrig True if the original entry should be
+   *     deleted after the copy takes place, essentially making the operation
+   *     a move instead of a copy. Defaults to false.
+   */
+  var copyOrMove_ = function(src, dest, opt_newName, opt_successCallback,
+                             opt_errorHandler, opt_deleteOrig) {
+    var self = this;
+
+    if (!fs_) {
+      throw new Error(FS_INIT_ERROR_MSG);
+    }
+
+    if (typeof src != typeof dest) {
+      throw new Error(INCORRECT_ARGS);
+    }
+
+    var newName = opt_newName || null;
+    var deleteOrig = opt_deleteOrig != undefined ? opt_deleteOrig : false;
+
+    if ((src.isFile || dest.isDirectory) && dest.isDirectory) {
+      if (deleteOrig) {
+        src.moveTo(dest, newName, opt_successCallback, opt_errorHandler);
+      } else {
+        src.copyTo(dest, newName, opt_successCallback, opt_errorHandler);
+      }
+    } else {
+      getEntry_(function(srcEntry, destDir) {
+        if (!destDir.isDirectory) {
+          var e = new Error('Oops! "' + destDir.name + ' is not a directory!');
+          if (opt_errorHandler) {
+            opt_errorHandler(e);
+          } else {
+            throw e;
+          }
+          return;
+        }
+        if (deleteOrig) {
+          srcEntry.moveTo(destDir, newName, opt_successCallback, opt_errorHandler);
+        } else {
+          srcEntry.copyTo(destDir, newName, opt_successCallback, opt_errorHandler);
+        }
+      }, src, dest);
+    }
+  }
+
   function Filer(fs) {
     fs_  = fs || null;
     if (fs_) {
       cwd_ = fs_.root;
       isOpen_ = true; // TODO: this may not be the case.
-
-      // Produces something like "filesystem:http://example.com/temporary/".
-      baseFsUrl_ = fs_.root.toURL();
     }
   }
 
@@ -351,9 +400,6 @@ var Filer = new function() {
       fs_ = fs;
       cwd_ = fs_.root;
       isOpen_ = true;
-
-      // e.g. "filesystem:http://example.com/temporary/"
-      baseFsUrl_ = fs_.root.toURL();
 
       opt_successCallback && opt_successCallback(fs);
     };
@@ -541,49 +587,22 @@ var Filer = new function() {
   };
 
   /**
-   * Renames a file or directory in the filesystem.
-   *
-   * @param {string|FileEntry|DirectoryEntry} entryOrPath A path to a file or
-   *     directory to, or the entry themselves. If a string, a filesystem URL or
-   *     a path is accepted.
-   * @param {string} newName The name to rename the entry with.
-   * @param {Function=} opt_successCallback An optional success callback, passed
-   *     the updated entry.
-   * @param {Function=} opt_errorHandler Optional error callback.
-   */
-  Filer.prototype.rename = function(entryOrPath, newName, opt_successCallback,
-                                    opt_errorHandler) {
-    // Prevent error of renaming file to same name.
-    if (entryOrPath.name == newName || entryOrPath == newName) {
-      return;
-    }
-
-    // Intermmediate error handler. Calls the user's error callback if present.
-    var errorHandler = function(e, opt_onError) {
-      if (e.code == FileError.NOT_FOUND_ERR) {
-         e.message = Error('"' + entry + '" does not exist.');
-       } else if (e.code == FileError.INVALID_MODIFICATION_ERR) {
-         e.message = Error('"' + newName + '" already exists.');
-       }
-       if (opt_onError) {
-         opt_onError(e);
-       } else {
-         throw e;
-       }
-    };
-
-    if (entryOrPath.isFile || entryOrPath.isDirectory) {
-      entryOrPath.moveTo(cwd_, newName, opt_successCallback, function(e) {
-        errorHandler(e, opt_errorHandler);
-      });
-    } else {
-      /*TODO: implement entryOrPath as a string.
-      cwd_.getDirectory(dirEntryOrPath, {}, callback, opt_errorHandler);
-        fileOrDirEntry.moveTo(cwd_, newName, opt_successCallback, function(e) {
-          errorHandler(e, opt_errorHandler);
-        });
-      }, entry);*/
-    }
+    * Moves a file or directory.
+    *
+    * @param {string|FileEntry|DirectoryEntry} src The file/directory
+    *     to move. If src is a string, a path or filesystem: URL is accepted.
+    * @param {string|DirectoryEntry} dest The directory to move the src into.
+    *     If dest is a string, a path or filesystem: URL is accepted.
+    *     Note: dest needs to be the same type as src.
+    * @param {string=} opt_newName An optional new name for the moved entry.
+    * @param {Function=} opt_successCallback Optional callback passed the moved
+    *     entry on a successful move.
+    * @param {Function=} opt_errorHandler Optional error callback.
+    */
+  Filer.prototype.mv = function(src, dest, opt_newName, opt_successCallback,
+                                opt_errorHandler) {
+    copyOrMove_.bind(this, src, dest, opt_newName, opt_successCallback,
+                     opt_errorHandler, true)();
   };
 
   /**
@@ -672,33 +691,8 @@ var Filer = new function() {
     */
   Filer.prototype.cp = function(src, dest, opt_newName, opt_successCallback,
                                 opt_errorHandler) {
-    if (!fs_) {
-      throw new Error(FS_INIT_ERROR_MSG);
-    }
-
-    if (typeof src != typeof dest) {
-      throw new Error(INCORRECT_ARGS);
-    }
-
-    var newName = opt_newName || null;
-
-    if ((src.isFile || dest.isDirectory) && dest.isDirectory) {
-      src.copyTo(dest, newName, opt_successCallback, opt_errorHandler);
-    } else {
-      getEntry_(function(srcEntry, destDir) {
-        if (!destDir.isDirectory) {
-          var e = new Error('Oops! "' + destDir.name + ' is not a directory!');
-          if (opt_errorHandler) {
-            opt_errorHandler(e);
-          } else {
-            throw e;
-          }
-          return;
-        }
-        srcEntry.copyTo(destDir, newName, opt_successCallback,
-                        opt_errorHandler);
-      }, src, dest);
-    }
+    copyOrMove_.bind(this, src, dest, opt_newName, opt_successCallback,
+                     opt_errorHandler)();
   };
 
   /**
