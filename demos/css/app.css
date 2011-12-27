@@ -416,3 +416,15 @@ header .active {
   -webkit-user-select:none;
   user-select: none;
 }
+#ticker {
+  opacity: 0;
+  -webkit-transition: opacity 1s ease-in-out;
+}
+#ticker.fadedIn {
+  opacity: 1;
+}
+#ticker .icon {
+  height: 25px;
+  width: 25px;
+  vertical-align: middle;
+}

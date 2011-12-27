@@ -13,7 +13,16 @@ var PREVIEWABLE_FILES = [
   '.h',
   '.cc', '.cpp',
   '.csv', '.tsv',
-  '.js'
+  '.js',
+  '.sh'
+];
+
+var TICKER_LIST = [
+  'Drag in files from the desktop to import them.',
+  'Use the "Import directory" button to import entire directories.',
+  'Use the keyboard to navigate and browser folders or preview files.',
+  'Some files can be previewed by clicking their <img src="images/icons/library.png" class="icon"> icon.',
+  'ESC gets you out of preview mode.',
 ];
 
 // Cache some frequently used DOM elements.
@@ -23,6 +32,7 @@ var fileList = filesContainer.querySelector('ul');
 var openFsButton = document.querySelector('#openFsButton');
 var errors = document.querySelector('#errors');
 var importButton = document.querySelector('[type="file"]');
+var ticker = document.querySelector('#ticker');
 
 function createNewEntry() {
   var type = document.querySelector('#entry-type').value;
@@ -140,7 +150,7 @@ function renderEntries(resultEntries) {
 
   if (!resultEntries.length) {
     var li = document.createElement('li');
-    li.innerHTML = 'No files.'
+    li.innerHTML = 'No files. Import some!'
     fileList.appendChild(li);
     return;
   }
@@ -469,6 +479,13 @@ function addListeners() {
 
 window.addEventListener('DOMContentLoaded', function(e) {
   addListeners();
+
+  var count = 0;
+  setInterval(function() {
+    ticker.innerHTML =
+        'Tip: ' + TICKER_LIST[count++ % TICKER_LIST.length];
+    ticker.classList.add('fadedIn');
+  }, 7000);
 }, false);
 
 window.addEventListener('load', function(e) {
