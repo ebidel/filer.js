@@ -32,6 +32,7 @@ var fileList = filesContainer.querySelector('ul');
 var openFsButton = document.querySelector('#openFsButton');
 var errors = document.querySelector('#errors');
 var importButton = document.querySelector('[type="file"]');
+var createButton = document.querySelector('#createButton');
 var ticker = document.querySelector('#ticker');
 
 function createNewEntry() {
@@ -173,7 +174,16 @@ function openFS() {
     openFsButton.innerHTML = '<div></div>';
     openFsButton.classList.add('fakebutton');
     importButton.disabled = false;
-  }, onError);
+    createButton.disabled = false;
+  }, function(e) {
+    if (e.name == 'SECURITY_ERR') {
+      errors.textContent = 'SECURITY_ERR: Are you running in incognito mode?';
+      openFsButton.innerHTML = '<div></div>';
+      openFsButton.classList.add('fakebutton');
+      return;
+    }
+    onError(e);
+  });
 }
 
 function setCwd(path) {
