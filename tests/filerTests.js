@@ -690,7 +690,7 @@ test('open()', 3, function() {
 
 });
 
-test('write()', 9, function() {
+test('write()', 11, function() {
   var filer = this.filer;
   var fileName = this.FILE_NAME + '_write';
   var data = '1234567890';
@@ -737,6 +737,36 @@ test('write()', 9, function() {
         equals(file.size, uint8.length, 'size of data written is correct');
         filer.rm(fileEntry, function() {
           start();
+        }, onError);
+      }, onError);
+    }, onError);
+  }, onError);
+
+  stop();
+  var fileName4 = fileName + '4';
+  filer.create(fileName4, false, function(entry) {
+    filer.write(entry, {data: data}, function(fileEntry, fileWriter) {
+      filer.write(entry, {data: data, append: true}, function(fileEntry2, fileWriter) {
+        filer.open(fileEntry2, function(file) {
+          equals(file.size, data.length * 2, 'append size of data written is correct');
+          filer.rm(fileEntry2, function() {
+            start();
+          }, onError);
+        }, onError);
+      }, onError);
+    }, onError);
+  }, onError);
+
+  stop();
+  var fileName5 = fileName + '5';
+  filer.create(fileName5, false, function(entry) {
+    filer.write(entry, {data: data + data}, function(fileEntry, fileWriter) {
+      filer.write(entry, {data: data}, function(fileEntry2, fileWriter) {
+        filer.open(fileEntry2, function(file) {
+          equals(file.size, data.length, 'overwrite existing file with shorter content');
+          filer.rm(fileEntry2, function() {
+            start();
+          }, onError);
         }, onError);
       }, onError);
     }, onError);

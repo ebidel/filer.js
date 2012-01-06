@@ -1,7 +1,7 @@
 "use strict";
 
 /*
-Copyright 2011 - Eric Bidelman
+Copyright 2011, 2012 - Eric Bidelman
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -698,7 +698,8 @@ var Filer = new function() {
    * @param {string|FileEntry} entryOrPath A path, filesystem URL, or FileEntry
     *     of the file to lookup.
    * @param {object} dataObj The data to write. Example:
-   *     {data: string|Blob|File|ArrayBuffer, type: mimetype}
+   *     {data: string|Blob|File|ArrayBuffer, type: mimetype, append: true}
+   *     If append is specified, data is appended to the end of the file.
    * @param {Function} successCallback Success callback, which is passed
    *     the created FileEntry and FileWriter object used to write the data.
    * @param {Function=} opt_errorHandler Optional error callback.
@@ -714,9 +715,24 @@ var Filer = new function() {
 
         fileWriter.onerror = opt_errorHandler;
 
-        fileWriter.onwrite = function(e) {
-          successCallback(fileEntry, fileWriter);
-        };
+        if (dataObj.append) {
+          fileWriter.onwriteend = function(e) {
+            successCallback(fileEntry, this);
+          };
+
+          fileWriter.seek(fileWriter.length); // Start write position at EOF.
+        } else {
+          var truncated = false;
+          fileWriter.onwriteend = function(e) {
+            // Truncate file to newly written file size.
+            if (!truncated) {
+              truncated = true;
+              this.truncate(this.position);
+              return;
+            }
+            successCallback(fileEntry, this);
+          };
+        }
 
         var bb = new BlobBuilder();
         bb.append(dataObj.data);

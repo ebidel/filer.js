@@ -339,9 +339,10 @@ write()
 This is the file to write data to. If the does not exist, it is created. Otherwise,
 the file's contents are overwritten if it already exists.
 
-The second argument is an object with two properties:
-- `data`: the content to write into the file
+The second argument is an object with three properties:
+- `data`: the content to write into the file.
 - `type`: optional mimetype of the content.
+- `append`: optional true if data should be appended to the file.
 
 The success callback for this method is passed the `FileEntry` for the file that
 was written to and the `FileWriter` object used to do the writing.
@@ -376,6 +377,14 @@ filer.write(fileEntry, {data: uint8.buffer},
 
 // Write string data.
 filer.write('path/to/file.txt', {data: '1234567890', type: 'text/plain'},
+  function(fileEntry, fileWriter) {
+    ...
+  },
+  onError
+);
+
+// Append to a file.
+filer.write('path/to/file.txt', {data: '1234567890', type: 'text/plain', append: true},
   function(fileEntry, fileWriter) {
     ...
   },
