@@ -184,7 +184,7 @@ footer {
   -webkit-transform: translateY(500px);
 }
 header > * {
-  -webkit-flex-align: center;
+  -webkit-flex-item-align: center;
 }
 header > div {
   width: -webkit-flex(50%);
