@@ -165,25 +165,31 @@ function renderEntries(resultEntries) {
 }
 
 function openFS() {
-  filer.init({persistent: false, size: 1024 * 1024}, function(fs) {
-    logger.log(fs.root.toURL());
-    logger.log('<p>Opened: ' + fs.name, + '</p>');
+  try {
+    filer.init({persistent: false, size: 1024 * 1024}, function(fs) {
+      logger.log(fs.root.toURL());
+      logger.log('<p>Opened: ' + fs.name, + '</p>');
 
-    setCwd('/'); // Display current path as root.
-    refreshFolder();
-    openFsButton.innerHTML = '<div></div>';
-    openFsButton.classList.add('fakebutton');
-    importButton.disabled = false;
-    createButton.disabled = false;
-  }, function(e) {
-    if (e.name == 'SECURITY_ERR') {
-      errors.textContent = 'SECURITY_ERR: Are you running in incognito mode?';
+      setCwd('/'); // Display current path as root.
+      refreshFolder();
       openFsButton.innerHTML = '<div></div>';
       openFsButton.classList.add('fakebutton');
-      return;
+      importButton.disabled = false;
+      createButton.disabled = false;
+    }, function(e) {
+      if (e.name == 'SECURITY_ERR') {
+        errors.textContent = 'SECURITY_ERR: Are you running in incognito mode?';
+        openFsButton.innerHTML = '<div></div>';
+        openFsButton.classList.add('fakebutton');
+        return;
+      }
+      onError(e);
+    });
+  } catch(e) {
+    if (e.code == FileError.BROWSER_NOT_SUPPORTED) {
+      files.innerHTML = 'BROWSER_NOT_SUPPORTED';
     }
-    onError(e);
-  });
+  }
 }
 
 function setCwd(path) {
