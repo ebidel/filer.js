@@ -27,6 +27,10 @@ self.resolveLocalFileSystemURL = self.resolveLocalFileSystemURL ||
 self.BlobBuilder = self.BlobBuilder || self.MozBlobBuilder ||
                    self.WebKitBlobBuilder;
 
+if (self.FileError === undefined) {
+  var FileError = function() {};
+  FileError.prototype.prototype = Error.prototype;
+}
 
 var Util = {
 
