@@ -46,14 +46,14 @@ module('init()', {
 test('default arguments', 6, function() {
   var filer = this.filer;
 
-  equals(filer.isOpen, false, 'filesystem not open');
+  equal(filer.isOpen, false, 'filesystem not open');
 
   stop();
   filer.init({}, function(fs) {
-    equals(Filer.DEFAULT_FS_SIZE, filer.size,
+    equal(Filer.DEFAULT_FS_SIZE, filer.size,
            'default size used == ' + Filer.DEFAULT_FS_SIZE);
-    equals(self.TEMPORARY, filer.type, 'TEMPORARY storage used by default');
-    equals(filer.isOpen, true, 'filesystem opened');
+    equal(self.TEMPORARY, filer.type, 'TEMPORARY storage used by default');
+    equal(filer.isOpen, true, 'filesystem opened');
 
     var filer2 = new Filer(filer.fs);
     ok(filer2.fs === filer.fs,
@@ -73,7 +73,7 @@ test('set size', 2, function() {
 
   stop();
   filer.init({persistent: false, size: Filer.DEFAULT_FS_SIZE * 5}, function(fs) {
-    equals(Filer.DEFAULT_FS_SIZE * 5, filer.size,
+    equal(Filer.DEFAULT_FS_SIZE * 5, filer.size,
            'size set to ' + Filer.DEFAULT_FS_SIZE * 5);
     start();
   }, onError);
@@ -81,7 +81,7 @@ test('set size', 2, function() {
   stop();
   var filer2 = new Filer();
   filer2.init({persistent: true, size: Filer.DEFAULT_FS_SIZE * 2}, function(fs) {
-    equals(Filer.DEFAULT_FS_SIZE * 2, filer2.size,
+    equal(Filer.DEFAULT_FS_SIZE * 2, filer2.size,
            'persistent size set to ' + Filer.DEFAULT_FS_SIZE * 2);
     start();
   }, onError);
@@ -93,9 +93,9 @@ test('storage type', 4, function() {
 
   stop();
   filer.init({}, function(fs) {
-    equals(Filer.DEFAULT_FS_SIZE, filer.size,
+    equal(Filer.DEFAULT_FS_SIZE, filer.size,
            'default size used == ' + Filer.DEFAULT_FS_SIZE);
-    equals(self.TEMPORARY, filer.type,
+    equal(self.TEMPORARY, filer.type,
            'TEMPORARY storage used by default');
     start();
   }, onError);
@@ -103,14 +103,14 @@ test('storage type', 4, function() {
   stop();
   var filer2 = new Filer();
   filer2.init({persistent: false}, function(fs) {
-    equals(self.TEMPORARY, filer2.type,
+    equal(self.TEMPORARY, filer2.type,
            'TEMPORARY storage used');
     start();
   }, onError);
 
   var filer3 = new Filer();
   filer3.init({persistent: true}, function(fs) {
-    equals(self.PERSISTENT, filer3.type,
+    equal(self.PERSISTENT, filer3.type,
            'PERSISTENT storage used');
     start();
   }, onError);
@@ -136,16 +136,16 @@ test('pathToFilesystemURL()', 8, function() {
   var fsURL = 'filesystem:' + document.location.origin + '/temporary/';
   var path = 'test/me';
 
-  equals(filer.pathToFilesystemURL('/'), fsURL, 'root as arg');
-  equals(filer.pathToFilesystemURL(fsURL), fsURL, 'filesystem URL as arg');
-  equals(filer.pathToFilesystemURL(fsURL + path), fsURL + path, 'filesystem URL as arg2');
-  equals(filer.pathToFilesystemURL('/' + path), fsURL + path, 'abs path as arg');
-  equals(filer.pathToFilesystemURL('./'), fsURL + './', './ as arg');
-  equals(filer.pathToFilesystemURL('./' + path), fsURL + './' + path, './ as arg');
-  //equals(filer.pathToFilesystemURL('..'), fsURL + '../', '.. as arg');
-  equals(filer.pathToFilesystemURL('../'), fsURL + '/../', '../ as arg');
-  equals(filer.pathToFilesystemURL('../' + path), fsURL + '../' + path, '../ as arg');
-  //equals(filer.pathToFilesystemURL(path), fsURL + path, 'relative path as arg');
+  equal(filer.pathToFilesystemURL('/'), fsURL, 'root as arg');
+  equal(filer.pathToFilesystemURL(fsURL), fsURL, 'filesystem URL as arg');
+  equal(filer.pathToFilesystemURL(fsURL + path), fsURL + path, 'filesystem URL as arg2');
+  equal(filer.pathToFilesystemURL('/' + path), fsURL + path, 'abs path as arg');
+  equal(filer.pathToFilesystemURL('./'), fsURL + './', './ as arg');
+  equal(filer.pathToFilesystemURL('./' + path), fsURL + './' + path, './ as arg');
+  //equal(filer.pathToFilesystemURL('..'), fsURL + '../', '.. as arg');
+  equal(filer.pathToFilesystemURL('../'), fsURL + '/../', '../ as arg');
+  equal(filer.pathToFilesystemURL('../' + path), fsURL + '../' + path, '../ as arg');
+  //equal(filer.pathToFilesystemURL(path), fsURL + path, 'relative path as arg');
 });
 
 
@@ -176,7 +176,7 @@ test('mkdir()', 7, function() {
   stop();
   filer.mkdir(folderName, false, function(entry) {
     ok(entry.isDirectory, 'created folder is a DirectoryEntry');
-    equals(entry.name, folderName, 'created folder is named "' + folderName + '"');
+    equal(entry.name, folderName, 'created folder is named "' + folderName + '"');
     start();
   }, onError);
 
@@ -202,8 +202,8 @@ test('mkdir()', 7, function() {
   var folderName2 = folderName + '2';
   var fullPath = [folderName2, folderName2, folderName2 + '_end'].join('/');
   filer.mkdir(fullPath, false, function(entry) {
-    equals(entry.name, folderName2 + '_end', 'last created folder is named "' + folderName2 + '_end"');
-    equals(entry.fullPath, '/' + fullPath, "Subfolders created properly");
+    equal(entry.name, folderName2 + '_end', 'last created folder is named "' + folderName2 + '_end"');
+    equal(entry.fullPath, '/' + fullPath, "Subfolders created properly");
     filer.rm(folderName2, function() {
       start();
     }, onError);
@@ -239,7 +239,7 @@ test('ls()', 7, function() {
   filer.ls('.', function(entries) {
     ok(entries.slice, 'returned entries is an array') // Verify we got an Array.
     filer.ls('/', function(entries2) {
-      equals(entries.length, entries2.length, 'Num root entries matches');
+      equal(entries.length, entries2.length, 'Num root entries matches');
       start();
     }, onError);
   }, onError);
@@ -325,7 +325,7 @@ test('cd()', 6, function() {
     filer.cd(dirEntry, function(dirEntry2) {
       ok(true, 'cd with DirectoryEntry as an argument.');
       filer.ls('.', function(entries) {
-        equals(entries.length, 0, 'Empty directory');
+        equal(entries.length, 0, 'Empty directory');
         start();
       }, onError);
     }, onError);
@@ -349,7 +349,7 @@ test('create()', 4, function() {
   stop();
   filer.create(fileName, false, function(entry) {
     ok(entry.isFile, 'created folder is a FileEntry');
-    equals(entry.name, fileName, 'created file named "' + fileName + '"');
+    equal(entry.name, fileName, 'created file named "' + fileName + '"');
     start();
   }, onError);
 
@@ -478,7 +478,7 @@ test('cp()', 20, function() {
     filer.cp(dirEntry, filer.fs.root, dupName2, function(entry) {
       ok(entry.isDirectory, 'Copied entry is a DirectoryEntry');
       ok(true, 'Copied folder in same dir. Args were Entry objects.');
-      equals(entry.name, dupName2, 'Moved entry name correct');
+      equal(entry.name, dupName2, 'Moved entry name correct');
       filer.rm(folderName2, function() {
         filer.rm(dupName2, function() {
           start();
@@ -494,7 +494,7 @@ test('cp()', 20, function() {
     filer.cp(fileEntry, filer.fs.root, dupfileName2, function(entry) {
       ok(entry.isFile, 'Copied entry is a DirectoryEntry');
       ok(true, 'Copied file in same dir. Args were Entry objects.');
-      equals(entry.name, dupfileName2, 'Moved entry name correct');
+      equal(entry.name, dupfileName2, 'Moved entry name correct');
       filer.rm(fileName2, function() {
         filer.rm(dupfileName2, function() {
           start();
@@ -510,9 +510,9 @@ test('cp()', 20, function() {
     filer.mkdir(srcName, false, function(srcEntry) {
       filer.cp(srcEntry, destEntry, null, function(entry) {
         ok(entry.isDirectory, 'Copied entry is a DirectoryEntry');
-        equals(entry.name, srcName, 'Copied folder into another dir. src and dest were DirectoryEntry.');
-        equals(entry.fullPath, '/' + folderName3 + '/' + srcName,
-               'Moved folder into another dir. fullPath is correct');
+        equal(entry.name, srcName, 'Copied folder into another dir. src and dest were DirectoryEntry.');
+        equal(entry.fullPath, '/' + folderName3 + '/' + srcName,
+              'Moved folder into another dir. fullPath is correct');
         filer.rm(folderName3, function() {
           filer.rm(srcName, function() {
             start();
@@ -529,8 +529,8 @@ test('cp()', 20, function() {
     filer.create(srcFileName3, false, function(srcEntry) {
       filer.cp(srcEntry, destEntry, null, function(entry) {
         ok(entry.isFile, 'Copied entry is a FileEntry');
-        equals(entry.name, srcFileName3, 'Copied file into another dir. Args were Entry objects.');
-        equals(entry.fullPath, '/' + fileName3 + '/' + srcFileName3,
+        equal(entry.name, srcFileName3, 'Copied file into another dir. Args were Entry objects.');
+        equal(entry.fullPath, '/' + fileName3 + '/' + srcFileName3,
                'Moved file into another dir. fullPath is correct');
         filer.rm(fileName3, function() {
           filer.rm(srcFileName3, function() {
@@ -548,8 +548,8 @@ test('cp()', 20, function() {
     filer.mkdir(srcName4, false, function(srcEntry) {
       filer.cp(srcEntry.toURL(), destEntry.toURL(), null, function(entry) {
         ok(entry.isDirectory, 'Copied entry is a DirectoryEntry');
-        equals(entry.name, srcName4, 'Copied folder into another dir. src and dest were filesystem URLs.');
-        equals(entry.fullPath, '/' + folderName4 + '/' + srcName4,
+        equal(entry.name, srcName4, 'Copied folder into another dir. src and dest were filesystem URLs.');
+        equal(entry.fullPath, '/' + folderName4 + '/' + srcName4,
                'Moved folder into another dir. fullPath is correct');
         filer.rm(folderName4, function() {
           filer.rm(srcName4, function() {
@@ -567,8 +567,8 @@ test('cp()', 20, function() {
     filer.create(srcName5, false, function(srcEntry) {
       filer.cp(srcEntry.fullPath, destEntry.fullPath, null, function(entry) {
         ok(entry.isFile, 'Copied entry is a FileEntry');
-        equals(entry.name, srcName5, 'Copied file into another dir. src and dest were paths.');
-        equals(entry.fullPath, '/' + folderName5 + '/' + srcName5,
+        equal(entry.name, srcName5, 'Copied file into another dir. src and dest were paths.');
+        equal(entry.fullPath, '/' + folderName5 + '/' + srcName5,
                'Moved file into another dir. fullPath is correct');
         filer.rm(folderName5, function() {
           filer.rm(srcName5, function() {
@@ -591,7 +591,7 @@ test('mv()', 10, function() {
   filer.create(fileName, false, function(entry) {
     filer.mv(entry, filer.fs.root, renamedFileName, function(entry2) {
       ok(entry2.isFile, 'Moved file is a FileEntry');
-      equals(entry2.name, renamedFileName, 'FileEntry as arg');
+      equal(entry2.name, renamedFileName, 'FileEntry as arg');
       filer.rm(entry2, function() {
         start();
       }, onError);
@@ -604,7 +604,7 @@ test('mv()', 10, function() {
   filer.create(fileName2, false, function(entry) {
     filer.mv(entry.name, '.', renamedFileName2, function(entry2) {
       ok(entry2.isFile, 'Moved file is a FileEntry');
-      equals(entry2.name, renamedFileName2, 'path as arg');
+      equal(entry2.name, renamedFileName2, 'path as arg');
       filer.rm(entry2, function() {
         start();
       }, onError);
@@ -616,7 +616,7 @@ test('mv()', 10, function() {
   filer.mkdir(folderName, false, function(entry) {
     filer.mv(entry, filer.fs.root, renamedFolder, function(entry2) {
       ok(entry2.isDirectory, 'Moved folder is a DirectoryEntry');
-      equals(entry2.name, renamedFolder, 'DirectoryEntry as arg');
+      equal(entry2.name, renamedFolder, 'DirectoryEntry as arg');
       filer.rm(entry2, function() {
         start();
       }, onError);
@@ -629,7 +629,7 @@ test('mv()', 10, function() {
   filer.mkdir(folderName2, false, function(entry) {
     filer.mv(entry.fullPath, filer.fs.root.fullPath, renamedFolder2, function(entry2) {
       ok(entry2.isDirectory, 'Moved folder is a DirectoryEntry');
-      equals(entry2.name, renamedFolder2, 'path as arg');
+      equal(entry2.name, renamedFolder2, 'path as arg');
       filer.rm(entry2, function() {
         start();
       }, onError);
@@ -642,7 +642,7 @@ test('mv()', 10, function() {
   filer.create(fileName3, false, function(entry) {
     filer.mv(entry.toURL(), filer.fs.root.toURL(), renamedFileName3, function(entry2) {
       ok(entry2.isFile, 'Moved file is a FileEntry');
-      equals(entry2.name, renamedFileName3, 'filesystem URL as arg');
+      equal(entry2.name, renamedFileName3, 'filesystem URL as arg');
       filer.rm(entry2, function() {
         start();
       }, onError);
@@ -703,7 +703,7 @@ test('write()', 11, function() {
       ok(true, 'data as Blob accepted')
       ok(fileEntry.isFile, 'Written file is a FileEntry');
       filer.open(fileEntry, function(file) {
-        equals(file.size, data.length, 'size of data written is correct');
+        equal(file.size, data.length, 'size of data written is correct');
         filer.rm(fileEntry, function() {
           start();
         }, onError);
@@ -718,7 +718,7 @@ test('write()', 11, function() {
       ok(true, 'data as string accepted')
       ok(fileEntry.isFile, 'Written file is a FileEntry');
       filer.open(fileEntry, function(file) {
-        equals(file.size, data.length, 'size of data written is correct');
+        equal(file.size, data.length, 'size of data written is correct');
         filer.rm(fileEntry, function() {
           start();
         }, onError);
@@ -734,7 +734,7 @@ test('write()', 11, function() {
       ok(true, 'data as ArrayBuffer accepted')
       ok(fileEntry.isFile, 'Written file is a FileEntry');
       filer.open(fileEntry, function(file) {
-        equals(file.size, uint8.length, 'size of data written is correct');
+        equal(file.size, uint8.length, 'size of data written is correct');
         filer.rm(fileEntry, function() {
           start();
         }, onError);
@@ -748,7 +748,7 @@ test('write()', 11, function() {
     filer.write(entry, {data: data}, function(fileEntry, fileWriter) {
       filer.write(entry, {data: data, append: true}, function(fileEntry2, fileWriter) {
         filer.open(fileEntry2, function(file) {
-          equals(file.size, data.length * 2, 'append size of data written is correct');
+          equal(file.size, data.length * 2, 'append size of data written is correct');
           filer.rm(fileEntry2, function() {
             start();
           }, onError);
@@ -763,7 +763,7 @@ test('write()', 11, function() {
     filer.write(entry, {data: data + data}, function(fileEntry, fileWriter) {
       filer.write(entry, {data: data}, function(fileEntry2, fileWriter) {
         filer.open(fileEntry2, function(file) {
-          equals(file.size, data.length, 'overwrite existing file with shorter content');
+          equal(file.size, data.length, 'overwrite existing file with shorter content');
           filer.rm(fileEntry2, function() {
             start();
           }, onError);
@@ -785,11 +785,11 @@ module('Utils', {
 });
 
 test('getFileExtension()', 5, function() {
-  equals(Util.getFileExtension('test'), '', 'no ex');
-  equals(Util.getFileExtension('test.txt'), '.txt', 'single char');
-  equals(Util.getFileExtension('test.cc'), '.cc', 'double char');
-  equals(Util.getFileExtension('test.tar.gz'), '.gz', 'double extension');
-  equals(Util.getFileExtension('something/test.mp3'), '.mp3', 'path');
+  equal(Util.getFileExtension('test'), '', 'no ex');
+  equal(Util.getFileExtension('test.txt'), '.txt', 'single char');
+  equal(Util.getFileExtension('test.cc'), '.cc', 'double char');
+  equal(Util.getFileExtension('test.tar.gz'), '.gz', 'double extension');
+  equal(Util.getFileExtension('something/test.mp3'), '.mp3', 'path');
 });
 
 test('strToDataURL()', 3, function() {
@@ -797,9 +797,9 @@ test('strToDataURL()', 3, function() {
   var mimetype = 'text/css';
   var expected = 'data:text/css,body { background: green; }';
   var expectedBin = 'data:text/css;base64,Ym9keSB7IGJhY2tncm91bmQ6IGdyZWVuOyB9';
-  equals(Util.strToDataURL(content, mimetype), expectedBin, 'plaintext, no arg specified');
-  equals(Util.strToDataURL(content, mimetype, false), expected, 'plaintext, opt arg specified');
-  equals(Util.strToDataURL(content, mimetype, true), expectedBin, 'binary, opt arg');
+  equal(Util.strToDataURL(content, mimetype), expectedBin, 'plaintext, no arg specified');
+  equal(Util.strToDataURL(content, mimetype, false), expected, 'plaintext, opt arg specified');
+  equal(Util.strToDataURL(content, mimetype, true), expectedBin, 'binary, opt arg');
 });
 
 test('fileToArrayBuffer()', 2, function() {
@@ -809,7 +809,7 @@ test('fileToArrayBuffer()', 2, function() {
   stop();
   Util.fileToArrayBuffer(bb.getBlob(), function(arrayBuffer) {
     ok(arrayBuffer.__proto__ == ArrayBuffer.prototype, 'Result is an ArrayBuffer');
-    equals(arrayBuffer.byteLength, data.length, 'Size matches');
+    equal(arrayBuffer.byteLength, data.length, 'Size matches');
     start();
   }, onError);
 });
@@ -819,7 +819,7 @@ test('arrayBufferToBlob()', 2, function() {
   var ab = new ArrayBuffer(len);
   var blob = Util.arrayBufferToBlob(ab);
   ok(blob.__proto__ == Blob.prototype, 'Result is a Blob');
-  equals(ab.byteLength, len, 'Size matches');
+  equal(ab.byteLength, len, 'Size matches');
 });
 
 test('arrayBufferToBinaryString()', 2, function() {
@@ -828,7 +828,7 @@ test('arrayBufferToBinaryString()', 2, function() {
   stop();
   Util.arrayBufferToBinaryString(ab, function(binStr) {
     ok(binStr.__proto__ == String.prototype, 'Result is a String');
-    equals(binStr.length, len, 'Size matches');
+    equal(binStr.length, len, 'Size matches');
     start();
   }, onError);
 });
