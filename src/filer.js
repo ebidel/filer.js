@@ -24,6 +24,7 @@ self.URL = self.URL || self.webkitURL;
 self.requestFileSystem = self.requestFileSystem || self.webkitRequestFileSystem;
 self.resolveLocalFileSystemURL = self.resolveLocalFileSystemURL ||
                                  self.webkitResolveLocalFileSystemURL;
+self.storageInfo = self.storageInfo || self.webkitStorageInfo;
 self.BlobBuilder = self.BlobBuilder || self.MozBlobBuilder ||
                    self.WebKitBlobBuilder;
 
@@ -409,8 +410,15 @@ var Filer = new function() {
 
       opt_successCallback && opt_successCallback(fs);
     };
-
-    self.requestFileSystem(this.type, size, init.bind(this), opt_errorHandler);
+    
+    if (this.type==self.PERSISTENT)
+      self.webkitStorageInfo.requestQuota(this.type, size, function(grantedBytes) {
+        self.requestFileSystem(this.type, size, init.bind(this), opt_errorHandler);
+      }, function(e) {
+        console && console.error(this, e);
+      });
+    else
+      self.requestFileSystem(this.type, size, init.bind(this), opt_errorHandler);
   };
 
   /**
