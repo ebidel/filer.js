@@ -411,14 +411,13 @@ var Filer = new function() {
       opt_successCallback && opt_successCallback(fs);
     };
     
-    if (this.type==self.PERSISTENT)
+    if (this.type == self.PERSISTENT) {
       self.webkitStorageInfo.requestQuota(this.type, size, function(grantedBytes) {
-        self.requestFileSystem(this.type, size, init.bind(this), opt_errorHandler);
-      }.bind(this), function(e) {
-        opt_errorHandler && opt_errorHandler(e);
-      });
-    else
+        self.requestFileSystem(this.type, grantedBytes, init.bind(this), opt_errorHandler);
+      }.bind(this), opt_errorHandler);
+    } else {
       self.requestFileSystem(this.type, size, init.bind(this), opt_errorHandler);
+    }
   };
 
   /**
