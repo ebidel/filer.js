@@ -414,7 +414,7 @@ var Filer = new function() {
     if (this.type==self.PERSISTENT)
       self.webkitStorageInfo.requestQuota(this.type, size, function(grantedBytes) {
         self.requestFileSystem(this.type, size, init.bind(this), opt_errorHandler);
-      }, function(e) {
+      }.bind(this), function(e) {
         opt_errorHandler && opt_errorHandler(e);
       });
     else
