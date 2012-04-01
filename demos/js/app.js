@@ -187,7 +187,7 @@ function openFS() {
     });
   } catch(e) {
     if (e.code == FileError.BROWSER_NOT_SUPPORTED) {
-      files.innerHTML = 'BROWSER_NOT_SUPPORTED';
+      fileList.innerHTML = 'BROWSER_NOT_SUPPORTED';
     }
   }
 }
