@@ -269,10 +269,11 @@ header > * {
   -o-flex-item-align: center;
 }
 header > div {
-  width: -webkit-flex(50%);
-  width: -moz-flex(50%);
-  width: -ms-flex(50%);
-  width: -o-flex(50%);
+  width: -webkit-flex(50%); /* For Chrome 18 stable. This fucntion is deprecated for -webkit-flex. */
+  -webkit-flex: 50%;
+  -moz-flex: 50%;
+  -ms-flex: 50%;
+  -o-flex: 50%;
   text-align: right;
 }
 header > div > span {
@@ -536,10 +537,9 @@ header .active {
   width: 50px;
 }
 #cwd {
-  width: -webkit-flex(80%);
-  -webkit-user-select:none;
+  width: 80%;
+  -webkit-user-select: none;
   user-select: none;
-  width: -moz-flex(80%);
   -moz-user-select: none;
 }
 #ticker {
