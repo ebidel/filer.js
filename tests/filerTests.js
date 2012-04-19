@@ -9,6 +9,8 @@ test("expect in test", 3, function() {
   ok(true);
 });*/
 
+var RUN_MANUAL_TEST = !!!window.phantom;
+
 function onError(e) {
   ok(false, 'unexpected error ' + e.name);
   start();
@@ -78,13 +80,17 @@ test('set size', 2, function() {
     start();
   }, onError);
 
-  stop();
-  var filer2 = new Filer();
-  filer2.init({persistent: true, size: Filer.DEFAULT_FS_SIZE * 2}, function(fs) {
-    equal(Filer.DEFAULT_FS_SIZE * 2, filer2.size,
-           'persistent size set to ' + Filer.DEFAULT_FS_SIZE * 2);
-    start();
-  }, onError);
+  if (RUN_MANUAL_TEST) {
+    stop();
+    var filer2 = new Filer();
+    filer2.init({persistent: true, size: Filer.DEFAULT_FS_SIZE * 2}, function(fs) {
+      equal(Filer.DEFAULT_FS_SIZE * 2, filer2.size,
+             'persistent size set to ' + Filer.DEFAULT_FS_SIZE * 2);
+      start();
+    }, onError);
+  } else {
+    ok(true); // So number of tests run matches number expected.
+  }
 
 });
 
@@ -108,12 +114,16 @@ test('storage type', 4, function() {
     start();
   }, onError);
 
-  var filer3 = new Filer();
-  filer3.init({persistent: true}, function(fs) {
-    equal(self.PERSISTENT, filer3.type,
-           'PERSISTENT storage used');
-    start();
-  }, onError);
+  if (RUN_MANUAL_TEST) {
+    var filer3 = new Filer();
+    filer3.init({persistent: true}, function(fs) {
+      equal(self.PERSISTENT, filer3.type,
+             'PERSISTENT storage used');
+      start();
+    }, onError);
+  } else {
+    ok(true); // So number of tests run matches number expected.
+  }
 
 });
 
@@ -812,6 +822,19 @@ test('fileToArrayBuffer()', 2, function() {
     equal(arrayBuffer.byteLength, data.length, 'Size matches');
     start();
   }, onError);
+});
+
+test('dataURLToBlob()', 5, function() {
+  var dataURL = 'data:text/html;base64,VGhpcyBpcyBhIHRlc3QK';
+  var blob = Util.dataURLToBlob(dataURL);
+  ok(blob.__proto__ == Blob.prototype, 'Result is a Blob');
+  equal(blob.size, window.atob('VGhpcyBpcyBhIHRlc3QK').length, 'blob.size');
+  equal(blob.type, 'text/html', 'blob.type');
+
+  var dataURL2 = 'data:text/html,<p>Hi there</p>';
+  var blob = Util.dataURLToBlob(dataURL2);
+  equal(blob.size, '<p>Hi there</p>'.length, 'blob.size');
+  equal(blob.type, 'text/html', 'blob.type');
 });
 
 test('arrayBufferToBlob()', 2, function() {
