@@ -126,7 +126,6 @@ var Util = {
    * Creates and returns a blob from a data URL (either base64 encoded or not).
    *
    * @param {string} dataURL The data URL to convert.
-   * @param {string} contentType The mimetype of the data.
    * @return {Blob} A blob representing the array buffer data.
    */
   dataURLToBlob: function(dataURL) {
