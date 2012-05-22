@@ -4,7 +4,7 @@ var logger = new Logger('#log div');
 var entries = []; // Cache of current working directory's entries.
 var currentLi = 1; // Keeps track of current highlighted el for keyboard nav.
 
-// If the OS doesn't reconize certain types, let's help it. These (extra) types
+// If the OS doesn't recognize certain types, let's help it. These (extra) types
 // will be read as plaintext.
 var PREVIEWABLE_FILES = [
   '.as',
