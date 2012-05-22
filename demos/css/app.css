@@ -221,6 +221,7 @@ body #container {
 header, footer {
   padding: 2px 0;
   display: -webkit-flexbox;
+  display: -webkit-flex;
   display: -moz-box;
   border-radius: 5px;
   box-shadow: 0 5px 5px #ccc;
