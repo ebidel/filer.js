@@ -220,7 +220,6 @@ body #container {
 
 header, footer {
   padding: 2px 0;
-  display: -webkit-flexbox;
   display: -webkit-flex;
   display: -moz-box;
   border-radius: 5px;
@@ -263,18 +262,17 @@ footer {
   -ms-transform: translateY(500px);
   -o-transform: translateY(500px);
 }
-header > * {
-  -webkit-flex-item-align: center;
-  -moz-box-align: center;
-  -ms-flex-item-align: center;
-  -o-flex-item-align: center;
+header {
+  -webkit-align-items: center;
+  -moz-align-items: center;
+  -ms-align-items: center;
+  -o-align-items: center;
 }
 header > div {
-  width: -webkit-flex(50%); /* For Chrome 18 stable. This fucntion is deprecated for -webkit-flex. */
-  -webkit-flex: 50%;
-  -moz-flex: 50%;
-  -ms-flex: 50%;
-  -o-flex: 50%;
+  -webkit-flex: 1 0 auto;
+  -moz-flex: 1 0 auto;
+  -ms-flex: 1 0 auto;
+  -o-flex: 1 0 auto;
   text-align: right;
 }
 header > div > span {
@@ -301,6 +299,7 @@ header h1 {
   text-shadow: 0px -1px black;
   margin: 0 1em 0 0;
   color: white;
+  -webkit-flex: 1 0 auto;
 }
 header h1 a {
   color: inherit;
