@@ -18,7 +18,7 @@ var PREVIEWABLE_FILES = [
 ];
 
 var TICKER_LIST = [
-  'Drag in files from the desktop to import them.',
+  'Drag in files or a folder from the desktop to import them.',
   'Use the "Import directory" button to import entire directories.',
   'Use the keyboard to navigate and browser folders or preview files.',
   'Some files can be previewed by clicking their <img src="images/icons/library.png" class="icon"> icon.',
@@ -488,7 +488,7 @@ function traverseFileTree(entry, path) {
   path = path || '';
   if (entry.isFile) {
     filer.open(entry, function(file) {
-      writeFile(path + file.name, file, false);
+      writeFile(path + file.name, file);
     }, onError);
   } else if (entry.isDirectory) {
     // mkdir is doing a mkdir -p for every full path -> sucks, but it works :).
@@ -512,7 +512,6 @@ function addListeners() {
     for (var i = 0, item; item = items[i]; ++i) {
       traverseFileTree(item.webkitGetAsEntry());
     }
-    filer.ls('.', renderEntries, onError); // Just re-read this dir.
   });
 }
 
@@ -524,7 +523,7 @@ window.addEventListener('DOMContentLoaded', function(e) {
     ticker.innerHTML =
         'Tip: ' + TICKER_LIST[count++ % TICKER_LIST.length];
     ticker.classList.add('fadedIn');
-  }, 7000);
+  }, 3000);
 }, false);
 
 window.addEventListener('load', function(e) {
