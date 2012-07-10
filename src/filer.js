@@ -1,22 +1,27 @@
-"use strict";
+/** 
+ * Copyright 2012 - Eric Bidelman
+ * 
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ * 
+ *      http://www.apache.org/licenses/LICENSE-2.0
+ * 
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ 
+ * @fileoverview
+ * Convenient wrapper library for the HTML5 Filesystem API, implementing
+ * familiar UNIX commands (cp, mv, ls) for its API.
+ * 
+ * @author Eric Bidelman (ebidel@gmail.com)
+ * @version: 0.2
+ */
 
-/*
-Copyright 2011, 2012 - Eric Bidelman
-
-Licensed under the Apache License, Version 2.0 (the "License");
-you may not use this file except in compliance with the License.
-You may obtain a copy of the License at
-
-     http://www.apache.org/licenses/LICENSE-2.0
-
-Unless required by applicable law or agreed to in writing, software
-distributed under the License is distributed on an "AS IS" BASIS,
-WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-See the License for the specific language governing permissions and
-limitations under the License.
-
-Author: Eric Bidelman (ebidel@gmail.com)
-*/
+'use strict';
 
 var self = this; // window or worker context.
 
@@ -83,10 +88,8 @@ var Util = {
       ui8a[i] = binStr.charCodeAt(i);
     }
 
-    var bb = new BlobBuilder();
-    bb.append(ui8a.buffer);
-
-    var blob = opt_contentType ? bb.getBlob(opt_contentType) : bb.getBlob();
+    var blob = new Blob([ui8a],
+                        opt_contentType ? {type: opt_contentType} : {});
 
     return self.URL.createObjectURL(blob);
   },
@@ -135,10 +138,7 @@ var Util = {
       var contentType = parts[0].split(':')[1];
       var raw = parts[1];
 
-      var bb = new BlobBuilder();
-      bb.append(raw);
-
-      return bb.getBlob(contentType);
+      return new Blob([raw], {type: contentType});
     }
 
     var parts = dataURL.split(BASE64_MARKER);
@@ -152,10 +152,7 @@ var Util = {
       uInt8Array[i] = raw.charCodeAt(i);
     }
 
-    var bb = new BlobBuilder();
-    bb.append(uInt8Array.buffer);
-
-    return bb.getBlob(contentType);
+    return new Blob([uInt8Array], {type: contentType});
   },
 
   /**
@@ -166,9 +163,9 @@ var Util = {
    * @return {Blob} A blob representing the array buffer data.
    */
   arrayBufferToBlob: function(buffer, opt_contentType) {
-    var bb = new BlobBuilder();
-    bb.append(buffer);
-    return opt_contentType ? bb.getBlob(opt_contentType) : bb.getBlob();
+    var uInt8Array = new Uint8Array(buffer);
+    return new Blob([uInt8Array],
+                    opt_contentType ? {type: opt_contentType} : {});
   },
 
   /**
@@ -189,9 +186,8 @@ var Util = {
       }
     };
 
-    var bb = new BlobBuilder();
-    bb.append(buffer);
-    reader.readAsBinaryString(bb.getBlob());
+    var uInt8Array = new Uint8Array(buffer);
+    reader.readAsBinaryString(new Blob([uInt8Array]));
   },
 
   /**
@@ -386,6 +382,7 @@ var Filer = new function() {
   }
 
   Filer.DEFAULT_FS_SIZE = DEFAULT_FS_SIZE;
+  Filer.version = '0.2';
 
   Filer.prototype = {
     get fs() {
@@ -782,9 +779,14 @@ var Filer = new function() {
           };
         }
 
-        var bb = new BlobBuilder();
-        bb.append(dataObj.data);
-        fileWriter.write(dataObj.type ? bb.getBlob(dataObj.type) : bb.getBlob());
+        // Blob() takes ArrayBufferView, not ArrayBuffer.
+        if (dataObj.data.__proto__ == ArrayBuffer.prototype) {
+          dataObj.data = new Uint8Array(dataObj.data);
+        }
+        var blob = new Blob([dataObj.data],
+                            dataObj.type ? {type: dataObj.type} : {});
+
+        fileWriter.write(blob);
 
       }, opt_errorHandler);
     };
@@ -798,7 +800,6 @@ var Filer = new function() {
                    opt_errorHandler);
     }
   };
-
 
   return Filer;
 };

@@ -707,9 +707,8 @@ test('write()', 11, function() {
 
   stop();
   filer.create(fileName, false, function(entry) {
-    var bb = new BlobBuilder();
-    bb.append(data);
-    filer.write(entry, {data: bb.getBlob()}, function(fileEntry, fileWriter) {
+    var blob = new Blob([data]);
+    filer.write(entry, {data: blob}, function(fileEntry, fileWriter) {
       ok(true, 'data as Blob accepted')
       ok(fileEntry.isFile, 'Written file is a FileEntry');
       filer.open(fileEntry, function(file) {
@@ -814,10 +813,9 @@ test('strToDataURL()', 3, function() {
 
 test('fileToArrayBuffer()', 2, function() {
   var data = '0123456780';
-  var bb = new BlobBuilder();
-  bb.append(data);
+  var blob = new Blob([data]);
   stop();
-  Util.fileToArrayBuffer(bb.getBlob(), function(arrayBuffer) {
+  Util.fileToArrayBuffer(blob, function(arrayBuffer) {
     ok(arrayBuffer.__proto__ == ArrayBuffer.prototype, 'Result is an ArrayBuffer');
     equal(arrayBuffer.byteLength, data.length, 'Size matches');
     start();

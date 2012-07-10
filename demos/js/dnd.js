@@ -24,7 +24,7 @@ function DnDFileController(selector, onDropCallback) {
 
     el_.classList.remove('dropping');
 
-    onDropCallback(e.dataTransfer.files)
+    onDropCallback(e.dataTransfer.files, e);
   };
 
   el_.addEventListener('dragenter', this.dragenter, false);
