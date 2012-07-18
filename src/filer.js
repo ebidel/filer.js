@@ -18,7 +18,7 @@
  * familiar UNIX commands (cp, mv, ls) for its API.
  * 
  * @author Eric Bidelman (ebidel@gmail.com)
- * @version: 0.2
+ * @version: 0.3
  */
 
 'use strict';
@@ -382,7 +382,7 @@ var Filer = new function() {
   }
 
   Filer.DEFAULT_FS_SIZE = DEFAULT_FS_SIZE;
-  Filer.version = '0.2';
+  Filer.version = '0.3';
 
   Filer.prototype = {
     get fs() {
@@ -444,12 +444,14 @@ var Filer = new function() {
       opt_successCallback && opt_successCallback(fs);
     };
     
-    if (this.type == self.PERSISTENT) {
-      self.webkitStorageInfo.requestQuota(this.type, size, function(grantedBytes) {
-        self.requestFileSystem(this.type, grantedBytes, init.bind(this), opt_errorHandler);
+    if (this.type == self.PERSISTENT && !!self.storageInfo) {
+      self.storageInfo.requestQuota(this.type, size, function(grantedBytes) {
+        self.requestFileSystem(
+            this.type, grantedBytes, init.bind(this), opt_errorHandler);
       }.bind(this), opt_errorHandler);
     } else {
-      self.requestFileSystem(this.type, size, init.bind(this), opt_errorHandler);
+      self.requestFileSystem(
+          this.type, size, init.bind(this), opt_errorHandler);
     }
   };
 
