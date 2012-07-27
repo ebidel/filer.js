@@ -482,27 +482,6 @@ function onImport(e) {
   }
 }
 
-// Allow dropped files and folders. If we have a folder, recursively traverse
-// the (sub)folder hierarchy and create the files/folders.
-function traverseFileTree(entry, path) {
-  path = path || '';
-  if (entry.isFile) {
-    filer.open(entry, function(file) {
-      writeFile(path + file.name, file);
-    }, onError);
-  } else if (entry.isDirectory) {
-    // mkdir is doing a mkdir -p for every full path -> sucks, but it works :).
-    filer.mkdir(entry.fullPath, false, function(lastDirEntry) {
-      var dirReader = entry.createReader();
-      dirReader.readEntries(function(entries) {
-        for (var i = 0; i < entries.length; ++i) {
-          traverseFileTree(entries[i], path + entry.name + '/');
-        }
-      });
-    }, onError);
-  }
-}
-
 function addListeners() {
   importButton.addEventListener('change', onImport, false);
   document.addEventListener('keydown', onKeydown, false);
@@ -510,7 +489,9 @@ function addListeners() {
   var dnd = new DnDFileController('body', function(files, e) {
     var items = e.dataTransfer.items;
     for (var i = 0, item; item = items[i]; ++i) {
-      traverseFileTree(item.webkitGetAsEntry());
+      filer.cp(item.webkitGetAsEntry(), filer.cwd, null, function(entry) {
+        addEntryToList(entry);
+      });
     }
   });
 }
