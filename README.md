@@ -1,8 +1,8 @@
 filer.js
 =======
 
-filer.js is a [well tested](/ebidel/filer.js/tree/master/tests) wrapper library for the [HTML5 Filesystem API](http://dev.w3.org/2009/dap/file-system/pub/FileSystem/),
-an API which enables web applications to read and write files and folders to to
+filer.js is a [well-tested](/ebidel/filer.js/tree/master/tests) wrapper library for the [HTML5 Filesystem API](http://dev.w3.org/2009/dap/file-system/pub/FileSystem/),
+an API which enables web applications to read and write files and folders to
 its own sandboxed filesystem.
 
 Unlike other wrapper libraries [[1], [2]], filer.js takes a different approach
