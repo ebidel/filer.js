@@ -1,12 +1,5 @@
 {
-  "author": "Eric Bidelman",
   "name": "filer.js",
-  "description": "A wrapper library for the HTML5 Filesystem API what reuses UNIX commands (cp, mv, ls) for its API.",
   "version": "0.4.0",
-  "homepage": "https://github.com/ebidel/filer.js",
-  "repository": {
-    "type": "git",
-    "url": "git@github.com:ebidel/filer.js.git"
-  },
   "main": "./src/filer.min.js"
 }
