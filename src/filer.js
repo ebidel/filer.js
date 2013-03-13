@@ -519,12 +519,12 @@ var Filer = new function() {
    *     given, each intermediate dir is created (e.g. similar to mkdir -p).
    * @param {bool=} opt_exclusive True if an error should be thrown if
    *     one or more of the directories already exists. False by default.
-   * @param {Function} successCallback Success handler passed the
+   * @param {Function} opt_successCallback Success handler passed the
    *     DirectoryEntry that was created. If we were passed a path, the last
    *     directory that was created is passed back.
    * @param {Function=} opt_errorHandler Optional error callback.
    */
-  Filer.prototype.mkdir = function(path, opt_exclusive, successCallback,
+  Filer.prototype.mkdir = function(path, opt_exclusive, opt_successCallback,
                                    opt_errorHandler) {
     if (!fs_) {
       throw new Error(FS_INIT_ERROR_MSG);
@@ -549,7 +549,7 @@ var Filer = new function() {
               createDir(dirEntry, folders.slice(1));
             } else {
               // Return the last directory that was created.
-              successCallback(dirEntry);
+              if (opt_successCallback) opt_successCallback(dirEntry);
             }
           } else {
             var e = new Error(path + ' is not a directory');
@@ -750,11 +750,11 @@ var Filer = new function() {
    * @param {object} dataObj The data to write. Example:
    *     {data: string|Blob|File|ArrayBuffer, type: mimetype, append: true}
    *     If append is specified, data is appended to the end of the file.
-   * @param {Function} successCallback Success callback, which is passed
+   * @param {Function} opt_successCallback Success callback, which is passed
    *     the created FileEntry and FileWriter object used to write the data.
    * @param {Function=} opt_errorHandler Optional error callback.
    */
-  Filer.prototype.write = function(entryOrPath, dataObj, successCallback,
+  Filer.prototype.write = function(entryOrPath, dataObj, opt_successCallback,
                                    opt_errorHandler) {
     if (!fs_) {
       throw new Error(FS_INIT_ERROR_MSG);
@@ -767,7 +767,7 @@ var Filer = new function() {
 
         if (dataObj.append) {
           fileWriter.onwriteend = function(e) {
-            successCallback(fileEntry, this);
+            if (opt_successCallback) opt_successCallback(fileEntry, this);
           };
 
           fileWriter.seek(fileWriter.length); // Start write position at EOF.
@@ -780,7 +780,7 @@ var Filer = new function() {
               this.truncate(this.position);
               return;
             }
-            successCallback(fileEntry, this);
+            if (opt_successCallback) opt_successCallback(fileEntry, this);
           };
         }
 
@@ -808,4 +808,3 @@ var Filer = new function() {
 
   return Filer;
 };
-
