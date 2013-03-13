@@ -1,22 +1,22 @@
-/** 
+/**
  * Copyright 2012 - Eric Bidelman
- * 
+ *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- * 
+ *
  *      http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
  * See the License for the specific language governing permissions and
  * limitations under the License.
- 
+
  * @fileoverview
  * Convenient wrapper library for the HTML5 Filesystem API, implementing
  * familiar UNIX commands (cp, mv, ls) for its API.
- * 
+ *
  * @author Eric Bidelman (ebidel@gmail.com)
  * @version: 0.4
  */
@@ -84,7 +84,7 @@ var Util = {
   strToObjectURL: function(binStr, opt_contentType) {
 
     var ui8a = new Uint8Array(binStr.length);
-    for (var i = 0; i < ui8a.length; ++i) { 
+    for (var i = 0; i < ui8a.length; ++i) {
       ui8a[i] = binStr.charCodeAt(i);
     }
 
@@ -446,7 +446,7 @@ var Filer = new function() {
 
       opt_successCallback && opt_successCallback(fs);
     };
-    
+
     if (this.type == self.PERSISTENT && !!self.storageInfo) {
       self.storageInfo.requestQuota(this.type, size, function(grantedBytes) {
         self.requestFileSystem(
@@ -475,14 +475,11 @@ var Filer = new function() {
     }
 
     var callback = function(dirEntry) {
-
-      cwd_ = dirEntry;
-
-      // Read contents of current working directory. According to spec, need to
+      // Read contents of directory. According to spec, need to
       // keep calling readEntries() until length of result array is 0. We're
       // guarenteed the same entry won't be returned again.
       var entries_ = [];
-      var reader = cwd_.createReader();
+      var reader = dirEntry.createReader();
 
       var readEntries = function() {
         reader.readEntries(function(results) {
