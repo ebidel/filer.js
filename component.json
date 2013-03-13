@@ -8,5 +8,5 @@
     "type": "git",
     "url": "git@github.com:ebidel/filer.js.git"
   },
-  "main": "./src/filer.min.js",
+  "main": "./src/filer.min.js"
 }
