@@ -16,7 +16,7 @@ other languages.
 **Check out the [demo app](http://html5-demos.appspot.com/static/filesystem/filer.js/demos/index.html):**
 
 <a href="http://html5-demos.appspot.com/static/filesystem/filer.js/demos/index.html">
-  <img src="//github.com/ebidel/filer.js/raw/master/demos/images/demo_screenshot.png" title="Demo app screenshot" alt="Demo app screenshot">
+  <img src="https://raw.github.com/ebidel/filer.js/master/demos/images/demo_screenshot.png" title="Demo app screenshot" alt="Demo app screenshot">
 </a>
 
 Supported Browsers
