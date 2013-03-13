@@ -119,7 +119,7 @@ function constructEntryHTML(entry, i) {
     html.push('<a href="', entry.toURL(), '" download><img src="images/icons/download.png" class="icon" title="Download" alt="Download"></a>');
   }
 
-  html.push('<a href="javascript:" data-remove-link onclick="remove(this,', i, ');"><img src="images/icons/trash_empty.png" class="icon" title="Remove" alt="Remove"></a>');
+  html.push('<a href="javascript:" data-remove-link onclick="rmEntry(this,', i, ');"><img src="images/icons/trash_empty.png" class="icon" title="Remove" alt="Remove"></a>');
 
   return html.join('');
 }
@@ -296,7 +296,7 @@ function rename(el, i) {
   toggleContentEditable(el);
 }
 
-function remove(link, i) {
+function rmEntry(link, i) {
   errors.textContent = ''; // Reset errors.
 
   var entry = entries[i];
@@ -314,6 +314,7 @@ function remove(link, i) {
     }, false);
   }, onError);
 }
+var remove = rmEntry; //Not sure if we need this.
 
 function copy(el, i) {
   errors.textContent = ''; // Reset errors.
