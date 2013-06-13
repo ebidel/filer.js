@@ -166,7 +166,7 @@ function renderEntries(resultEntries) {
 
 function openFS() {
   try {
-    filer.init({persistent: false, size: 1024 * 1024}, function(fs) {
+    filer.init({persistent: true, size: 1024 * 1024}, function(fs) {
       logger.log(fs.root.toURL());
       logger.log('<p>Opened: ' + fs.name, + '</p>');
 

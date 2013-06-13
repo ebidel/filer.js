@@ -1,5 +1,5 @@
 /** 
- * Copyright 2012 - Eric Bidelman
+ * Copyright 2013 - Eric Bidelman
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -18,7 +18,7 @@
  * familiar UNIX commands (cp, mv, ls) for its API.
  * 
  * @author Eric Bidelman (ebidel@gmail.com)
- * @version: 0.4.1
+ * @version: 0.4.2
  */
 
 'use strict';
@@ -29,7 +29,10 @@ self.URL = self.URL || self.webkitURL;
 self.requestFileSystem = self.requestFileSystem || self.webkitRequestFileSystem;
 self.resolveLocalFileSystemURL = self.resolveLocalFileSystemURL ||
                                  self.webkitResolveLocalFileSystemURL;
-self.storageInfo = self.storageInfo || self.webkitStorageInfo;
+navigator.temporaryStorage = navigator.temporaryStorage ||
+                             navigator.webkitTemporaryStorage;
+navigator.persistentStorage = navigator.persistentStorage ||
+                              navigator.webkitPersistentStorage;
 self.BlobBuilder = self.BlobBuilder || self.MozBlobBuilder ||
                    self.WebKitBlobBuilder;
 
@@ -446,9 +449,9 @@ var Filer = new function() {
 
       opt_successCallback && opt_successCallback(fs);
     };
-    
-    if (this.type == self.PERSISTENT && !!self.storageInfo) {
-      self.storageInfo.requestQuota(this.type, size, function(grantedBytes) {
+
+    if (this.type == self.PERSISTENT && !!navigator.persistentStorage) {
+      navigator.persistentStorage.requestQuota(size, function(grantedBytes) {  
         self.requestFileSystem(
             this.type, grantedBytes, init.bind(this), opt_errorHandler);
       }.bind(this), opt_errorHandler);

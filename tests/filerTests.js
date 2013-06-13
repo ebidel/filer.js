@@ -81,8 +81,8 @@ test('set size', 2, function() {
   }, onError);
 
   if (RUN_MANUAL_TEST) {
-    stop();
     var filer2 = new Filer();
+    stop();
     filer2.init({persistent: true, size: Filer.DEFAULT_FS_SIZE * 2}, function(fs) {
       equal(Filer.DEFAULT_FS_SIZE * 2, filer2.size,
              'persistent size set to ' + Filer.DEFAULT_FS_SIZE * 2);
@@ -116,6 +116,7 @@ test('storage type', 4, function() {
 
   if (RUN_MANUAL_TEST) {
     var filer3 = new Filer();
+    stop();
     filer3.init({persistent: true}, function(fs) {
       equal(self.PERSISTENT, filer3.type,
              'PERSISTENT storage used');
