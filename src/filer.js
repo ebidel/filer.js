@@ -820,11 +820,15 @@ var Filer = new function() {
     var queryCallback = function(byteUsed, byteCap) {
       opt_successCallback(byteUsed, byteCap - byteUsed, byteCap);
     }
+    
+    if (!(navigator.temporaryStorage.queryUsageAndQuota && navigator.persistentStorage.queryUsageAndQuota)){
+      throw new Error(NOT_IMPLEMENTED_MSG);
+    }
 
     if (self.TEMPORARY == this.type) {
-      navigator.webkitTemporaryStorage.queryUsageAndQuota(queryCallback, opt_errorHandler);
+      navigator.temporaryStorage.queryUsageAndQuota(queryCallback, opt_errorHandler);
     } else if (self.PERSISTENT == this.type) {
-      navigator.webkitPersistentStorage.queryUsageAndQuota(queryCallback, opt_errorHandler);
+      navigator.persistentStorage.queryUsageAndQuota(queryCallback, opt_errorHandler);
     }
   };
                                    
