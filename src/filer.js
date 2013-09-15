@@ -812,16 +812,16 @@ var Filer = new function() {
   /**
    * Displays disk space usage.
    *
-   * @param {Function} opt_successCallback Success callback, which is passed
+   * @param {Function} successCallback Success callback, which is passed
    *     Used space, Free space and Currently allocated total space in bytes.
    * @param {Function=} opt_errorHandler Optional error callback.
    */
-  Filer.prototype.df = function(opt_successCallback, opt_errorHandler) {
+  Filer.prototype.df = function(successCallback, opt_errorHandler) {
     var queryCallback = function(byteUsed, byteCap) {
-      opt_successCallback(byteUsed, byteCap - byteUsed, byteCap);
+      successCallback(byteUsed, byteCap - byteUsed, byteCap);
     }
     
-    if (!(navigator.temporaryStorage.queryUsageAndQuota && navigator.persistentStorage.queryUsageAndQuota)){
+    if (!(navigator.temporaryStorage.queryUsageAndQuota && navigator.persistentStorage.queryUsageAndQuota)) {
       throw new Error(NOT_IMPLEMENTED_MSG);
     }
 
