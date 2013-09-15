@@ -164,12 +164,12 @@ function renderEntries(resultEntries) {
   });
 }
 
-function showUsage(){
-    filer.df(function(i_used,i_free,i_cap){
-        document.querySelector('#byte_used').innerHTML = i_used;
-        document.querySelector('#byte_free').innerHTML = i_free;
-        document.querySelector('#byte_cap').innerHTML = i_cap;
-    }, onError);
+function showUsage() {
+  filer.df(function(byteUsed, byteFree, byteCap) {
+    document.querySelector('#byteUsed').innerHTML = byteUsed;
+    document.querySelector('#byteFree').innerHTML = byteFree;
+    document.querySelector('#byteCap').innerHTML = byteCap;
+  }, onError);
 }
 
 function openFS() {
