@@ -557,3 +557,10 @@ header .active {
   width: 25px;
   vertical-align: middle;
 }
+
+#usage {
+    margin-bottom: 10px;
+}
+#usage span {
+    margin-right: 20px;
+}

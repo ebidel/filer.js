@@ -164,6 +164,14 @@ function renderEntries(resultEntries) {
   });
 }
 
+function showUsage() {
+  filer.df(function(byteUsed, byteFree, byteCap) {
+    document.querySelector('#byteUsed').innerHTML = byteUsed;
+    document.querySelector('#byteFree').innerHTML = byteFree;
+    document.querySelector('#byteCap').innerHTML = byteCap;
+  }, onError);
+}
+
 function openFS() {
   try {
     filer.init({persistent: true, size: 1024 * 1024}, function(fs) {
@@ -176,6 +184,7 @@ function openFS() {
       openFsButton.classList.add('fakebutton');
       importButton.disabled = false;
       createButton.disabled = false;
+      showUsage();
     }, function(e) {
       if (e.name == 'SECURITY_ERR') {
         errors.textContent = 'SECURITY_ERR: Are you running in incognito mode?';
