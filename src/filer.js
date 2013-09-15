@@ -809,19 +809,23 @@ var Filer = new function() {
     }
   };
   
+  /**
+   * Displays disk space usage.
+   *
+   * @param {Function} opt_successCallback Success callback, which is passed
+   *     Used space, Free space and Currently allocated total space in bytes.
+   * @param {Function=} opt_errorHandler Optional error callback.
+   */
   Filer.prototype.df = function(opt_successCallback, opt_errorHandler) {
-      
-      var df_cb = function(i_used,i_cap){
-          opt_successCallback(i_used,i_cap - i_used,i_cap);
-      }
-      
-      if (self.TEMPORARY == this.type){
-          navigator.webkitTemporaryStorage.queryUsageAndQuota(df_cb,opt_errorHandler);
-      }
-      else if (self.PERSISTENT == this.type){
-          navigator.webkitPersistentStorage.queryUsageAndQuota(df_cb,opt_errorHandler);
-      }
-      
+    var queryCallback = function(byteUsed, byteCap) {
+      opt_successCallback(byteUsed, byteCap - byteUsed, byteCap);
+    }
+
+    if (self.TEMPORARY == this.type) {
+      navigator.webkitTemporaryStorage.queryUsageAndQuota(queryCallback, opt_errorHandler);
+    } else if (self.PERSISTENT == this.type) {
+      navigator.webkitPersistentStorage.queryUsageAndQuota(queryCallback, opt_errorHandler);
+    }
   };
                                    
   return Filer;
