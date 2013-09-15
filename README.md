@@ -127,6 +127,20 @@ filer.ls(filer.fs.root, function(entries) {
 }, onError);
 ```
 
+df()
+-----
+
+*Displays disk space usage.*
+
+The first and second arguments, are success and error callbacks. Used space, Free space and currently allocated total space are passed to the success callback.
+
+```javascript
+
+filer.df(function(used, free, cap) {
+  // used, free and capacity in bytes.
+}, onError);
+```
+
 cd()
 -----
 
