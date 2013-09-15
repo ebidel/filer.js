@@ -808,6 +808,21 @@ var Filer = new function() {
                    opt_errorHandler);
     }
   };
-
+  
+  Filer.prototype.df = function(opt_successCallback, opt_errorHandler) {
+      
+      var df_cb = function(i_used,i_cap){
+          opt_successCallback(i_used,i_cap - i_used,i_cap);
+      }
+      
+      if (self.TEMPORARY == this.type){
+          navigator.webkitTemporaryStorage.queryUsageAndQuota(df_cb,opt_errorHandler);
+      }
+      else if (self.PERSISTENT == this.type){
+          navigator.webkitPersistentStorage.queryUsageAndQuota(df_cb,opt_errorHandler);
+      }
+      
+  };
+                                   
   return Filer;
 };
