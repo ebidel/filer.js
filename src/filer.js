@@ -18,7 +18,7 @@
  * familiar UNIX commands (cp, mv, ls) for its API.
  * 
  * @author Eric Bidelman (ebidel@gmail.com)
- * @version: 0.4.2
+ * @version: 0.4.3
  */
 
 'use strict';
@@ -385,7 +385,7 @@ var Filer = new function() {
   }
 
   Filer.DEFAULT_FS_SIZE = DEFAULT_FS_SIZE;
-  Filer.version = '0.4.1';
+  Filer.version = '0.4.3';
 
   Filer.prototype = {
     get fs() {
