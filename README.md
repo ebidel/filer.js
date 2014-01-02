@@ -447,3 +447,4 @@ document.querySelector('input[type="file"]').onchange = function(e) {
 };
 ```
 
+[![Analytics](https://ga-beacon.appspot.com/UA-46812528-1/ebidel/filer.js/README)](https://github.com/igrigorik/ga-beacon)
