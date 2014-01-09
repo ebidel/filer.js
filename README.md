@@ -178,6 +178,8 @@ create()
 `create()` creates an empty file in the current working directory. If you wish
 to write data to a file, see the `write()` method.
 
+**Important Note** : Directory path leading to the file must exist before calling create!
+
 ```javascript
 filer.create('myFile.txt', false, function(fileEntry) {
   // fileEntry.name == 'myFile.txt'
