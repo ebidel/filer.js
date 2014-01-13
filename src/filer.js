@@ -40,8 +40,6 @@ self.BlobBuilder = self.BlobBuilder || self.MozBlobBuilder ||
 if (self.FileError === undefined) {
   var FileError = function() {};
   FileError.prototype.prototype = Error.prototype;
-} else {
-  var FileError = self.FileError;
 }
 
 var Util = {
@@ -840,7 +838,7 @@ var Filer = new function() {
 // For CommonJS
 if (typeof exports !== 'undefined') {
   if (typeof module !== 'undefined' && module.exports) {
-    exports = module.exports = Filer;
+    module.exports = Filer;
   }
   exports.Filer = Filer;
 }
