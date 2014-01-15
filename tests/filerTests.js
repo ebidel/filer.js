@@ -663,7 +663,7 @@ test('mv()', 10, function() {
 });
 
 
-test('open()', 3, function() {
+test('open()', 4, function() {
   var filer = this.filer;
   var fileName = this.FILE_NAME + '_open';
 
@@ -690,6 +690,17 @@ test('open()', 3, function() {
       start();
     }, onError);
   }, onError);
+
+  stop();
+  var nonExistentFileName = fileName + '_doesNotExist';
+  filer.open(nonExistentFileName, function() {
+    ok(false, 'filesystem: Missing file. Success callback was fired');
+    start();
+  }, function(e) {
+    var expectedMessage = '"' + filer.pathToFilesystemURL(nonExistentFileName) + '" does not exist.';
+    ok(e.message == expectedMessage, 'filesystem: Missing file. Correct error message.');
+    start();
+  });
 
    // Stall clean up for a bit so all tests have run.
    setTimeout(function() {

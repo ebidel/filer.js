@@ -292,30 +292,37 @@ var Filer = new function() {
    *     passed the entry/entries that were fetched. The ordering of the
    *     entries passed to the callback correspond to the same order passed
    *     to this method.
-   * @param {...string} var_args 1-2 paths to lookup and return entries for.
+   * @param {Array<String>} Array of 1-2 paths to lookup and return entries for.
    *     These can be paths or filesystem: URLs.
+   * @param {Function=} opt_errorHandler Optional error callback.
    */
-  var getEntry_ = function(callback, var_args) {
-    var srcStr = arguments[1];
-    var destStr = arguments[2];
+  var getEntry_ = function(callback, lookupPaths, opt_errorHandler) {
+    var srcStr = lookupPaths[0];
+    var destStr = lookupPaths[1];
 
     var onError = function(e) {
+      var error = null;
       if (e.code == FileError.NOT_FOUND_ERR) {
         if (destStr) {
-          throw new Error('"' + srcStr + '" or "' + destStr +
+          error = new Error('"' + srcStr + '" or "' + destStr +
                           '" does not exist.');
         } else {
-          throw new Error('"' + srcStr + '" does not exist.');
+          error = new Error('"' + srcStr + '" does not exist.');
         }
       } else {
-        throw new Error('Problem getting Entry for one or more paths.');
+        error = new Error('Problem getting Entry for one or more paths.');
+      }
+      if (opt_errorHandler) {
+        opt_errorHandler(error);
+      } else {
+        throw error;
       }
     };
 
     // Build a filesystem: URL manually if we need to.
     var src = pathToFsURL_(srcStr);
 
-    if (arguments.length == 3) {
+    if (lookupPaths.length == 2) {
       var dest = pathToFsURL_(destStr);
       self.resolveLocalFileSystemURL(src, function(srcEntry) {
         self.resolveLocalFileSystemURL(dest, function(destEntry) {
@@ -372,7 +379,7 @@ var Filer = new function() {
         } else {
           srcEntry.copyTo(destDir, newName, opt_successCallback, opt_errorHandler);
         }
-      }, src, dest);
+      }, [src, dest], opt_errorHandler);
     }
   }
 
@@ -508,7 +515,7 @@ var Filer = new function() {
     if (dirEntryOrPath.isDirectory) { // passed a DirectoryEntry.
       callback(dirEntryOrPath);
     } else if (isFsURL_(dirEntryOrPath)) { // passed a filesystem URL.
-      getEntry_(callback, pathToFsURL_(dirEntryOrPath));
+      getEntry_(callback, [pathToFsURL_(dirEntryOrPath)], opt_errorHandler);
     } else { // Passed a path. Look up DirectoryEntry and proceeed.
       // TODO: Find way to use getEntry_(callback, dirEntryOrPath); with cwd_.
       cwd_.getDirectory(dirEntryOrPath, {}, callback, opt_errorHandler);
@@ -597,7 +604,7 @@ var Filer = new function() {
     } else {
       getEntry_(function(fileEntry) {
         fileEntry.file(successCallback, opt_errorHandler);
-      }, pathToFsURL_(entryOrPath));
+      }, [pathToFsURL_(entryOrPath)], opt_errorHandler);
     }
   };
 
@@ -681,7 +688,7 @@ var Filer = new function() {
     if (entryOrPath.isFile || entryOrPath.isDirectory) {
       removeIt(entryOrPath);
     } else {
-      getEntry_(removeIt, entryOrPath);
+      getEntry_(removeIt, [entryOrPath], opt_errorHandler);
     }
   };
 
@@ -720,7 +727,7 @@ var Filer = new function() {
             throw e;
           }
         }
-      }, dirEntryOrPath);
+      }, [dirEntryOrPath], opt_errorHandler);
     }
   };
 
@@ -802,7 +809,7 @@ var Filer = new function() {
     if (entryOrPath.isFile) {
       writeFile_(entryOrPath);
     } else if (isFsURL_(entryOrPath)) {
-      getEntry_(writeFile_, entryOrPath);
+      getEntry_(writeFile_, [entryOrPath], opt_errorHandler);
     } else {
       cwd_.getFile(entryOrPath, {create: true, exclusive: false}, writeFile_,
                    opt_errorHandler);
