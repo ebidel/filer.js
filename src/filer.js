@@ -302,19 +302,20 @@ var Filer = new function() {
     var errorHandler = opt_errorHandler || function(e) { throw e; };
 
     var onError = function(e) {
+      var error;
       if (e.code == FileError.NOT_FOUND_ERR) {
         if (destStr) {
-          errorHandler(new Error('"' + srcStr + '" or "' + destStr +
-                          '" does not exist.'));
-          return;
+          error = new Error('"' + srcStr + '" or "' + destStr +
+                          '" does not exist.');
         } else {
-          errorHandler(new Error('"' + srcStr + '" does not exist.'));
-          return;
+          error = new Error('"' + srcStr + '" does not exist.');
         }
       } else {
-        errorHandler(new Error('Problem getting Entry for one or more paths.'));
-        return;
+        error = new Error('Problem getting Entry for one or more paths.');
       }
+      error.code = e.code;
+      errorHandler(error);
+      return;
     };
 
     // Build a filesystem: URL manually if we need to.
