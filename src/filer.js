@@ -139,7 +139,7 @@ var Util = {
     if (dataURL.indexOf(BASE64_MARKER) == -1) {
       var parts = dataURL.split(',');
       var contentType = parts[0].split(':')[1];
-      var raw = parts[1];
+      var raw = decodeURIComponent(parts[1]);
 
       return new Blob([raw], {type: contentType});
     }
