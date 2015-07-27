@@ -536,19 +536,21 @@ var Filer = new function() {
     var exclusive = opt_exclusive != null ? opt_exclusive : false;
 
     var folderParts = path.split('/');
+    for (var i in folderParts) {
+        // Throw out './' or '/' and move on. Prevents: '/foo/.//bar'.
+        if (folderParts[i] == '.' || folderParts[i] == '') {
+          folderParts = folderParts.splice(i, 1);
+        }
+    }
 
     var createDir = function(rootDir, folders) {
-      // Throw out './' or '/' and move on. Prevents: '/foo/.//bar'.
-      if (folders[0] == '.' || folders[0] == '') {
-        folders = folders.slice(1);
-      }
 
       rootDir.getDirectory(folders[0], {create: true, exclusive: exclusive},
         function (dirEntry) {
           if (dirEntry.isDirectory) { // TODO: check shouldn't be necessary.
             // Recursively add the new subfolder if we have more to create and
             // There was more than one folder to create.
-            if (folders.length && folderParts.length != 1) {
+            if (folders.length > 1 && folderParts.length != 1) {
               createDir(dirEntry, folders.slice(1));
             } else {
               // Return the last directory that was created.
