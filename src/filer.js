@@ -834,3 +834,11 @@ var Filer = new function() {
                                    
   return Filer;
 };
+
+// For CommonJS
+if (typeof exports !== 'undefined') {
+  if (typeof module !== 'undefined' && module.exports) {
+    module.exports = Filer;
+  }
+  exports.Filer = Filer;
+}
