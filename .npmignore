@@ -1,0 +1,5 @@
+build/*
+demos/*
+tests/*
+src/filer.js
+component.json
