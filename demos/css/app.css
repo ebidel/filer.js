@@ -376,6 +376,11 @@ img.download {
   width: 21px;
   margin: 0 2px 0 6px;
 }
+#files li a[compress] img.icon {
+  height: 21px;
+  width: 21px;
+  margin: 0 2px 0 6px;
+}
 #files li a img.icon:hover {
   opacity: 1;
 }

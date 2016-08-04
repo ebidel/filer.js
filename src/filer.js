@@ -236,18 +236,6 @@ var MyFileError = function(obj) {
 // code mnemonic.
 FileError.BROWSER_NOT_SUPPORTED = 1000;
 
-// TODO: remove when FileError.name is implemented (crbug.com/86014).
-FileError.prototype.__defineGetter__('name', function() {
-  var keys = Object.keys(FileError);
-  for (var i = 0, key; key = keys[i]; ++i) {
-    if (FileError[key] == this.code) {
-      return key;
-    }
-  }
-  return 'Unknown Error';
-});
-
-
 var Filer = new function() {
 
   var FS_INIT_ERROR_MSG = 'Filesystem has not been initialized.';
@@ -564,7 +552,7 @@ var Filer = new function() {
           }
         },
         function(e) {
-          if (e.code == FileError.INVALID_MODIFICATION_ERR) {
+          if (e.name == FileError.INVALID_MODIFICATION_ERR) {
             e.message = "'" + path + "' already exists";
             if (opt_errorHandler) {
               opt_errorHandler(e);
@@ -622,7 +610,7 @@ var Filer = new function() {
 
     cwd_.getFile(path, {create: true,  exclusive: exclusive}, successCallback,
       function(e) {
-        if (e.code == FileError.INVALID_MODIFICATION_ERR) {
+        if (e.name == FileError.INVALID_MODIFICATION_ERR) {
           e.message = "'" + path + "' already exists";
         }
         if (opt_errorHandler) {

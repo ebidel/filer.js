@@ -34,6 +34,26 @@ var errors = document.querySelector('#errors');
 var importButton = document.querySelector('[type="file"]');
 var createButton = document.querySelector('#createButton');
 var ticker = document.querySelector('#ticker');
+var query = function() {
+  var query_string = {};
+  var query = window.location.search.substring(1);
+  var vars = query.split("&");
+  for (var i=0;i<vars.length;i++) {
+    var pair = vars[i].split("=");
+        // If first entry with this name
+    if (typeof query_string[pair[0]] === "undefined") {
+      query_string[pair[0]] = decodeURIComponent(pair[1]);
+        // If second entry with this name
+    } else if (typeof query_string[pair[0]] === "string") {
+      var arr = [ query_string[pair[0]],decodeURIComponent(pair[1]) ];
+      query_string[pair[0]] = arr;
+        // If third or later entry with this name
+    } else {
+      query_string[pair[0]].push(decodeURIComponent(pair[1]));
+    }
+  }
+  return query_string;
+}();
 
 function createNewEntry() {
   var type = document.querySelector('#entry-type').value;
@@ -53,14 +73,14 @@ function onError(e) {
   errors.textContent = e.name;
 }
 
-function refreshFolder(e) {
+function refreshFolder(path) {
   errors.textContent = ''; // Reset errors.
 
   // Open the FS, otherwise list the files.
   if (filer && !filer.isOpen) {
     openFS();
   } else {
-    filer.ls('.', function(entries) {
+    filer.ls(path || '.', function(entries) {
       renderEntries(entries);
     }, onError);
   }
@@ -119,6 +139,8 @@ function constructEntryHTML(entry, i) {
     html.push('<a href="', entry.toURL(), '" download><img src="images/icons/download.png" class="icon" title="Download" alt="Download"></a>');
   }
 
+  html.push('<a href="', entry.toURL(), '" compress onclick="return compress(', i, ')"><img src="images/icons/zip.png" class="icon" title="Compress and Download" alt="Compress and Download"></a>');
+
   html.push('<a href="javascript:" data-remove-link onclick="removeEntry(this,', i, ');"><img src="images/icons/trash_empty.png" class="icon" title="Remove" alt="Remove"></a>');
 
   return html.join('');
@@ -172,19 +194,33 @@ function showUsage() {
   }, onError);
 }
 
-function openFS() {
+function openFS(path) {
   try {
-    filer.init({persistent: true, size: 1024 * 1024}, function(fs) {
-      logger.log(fs.root.toURL());
+    filer.init({persistent: true, size: 1024 * 1024 * 100}, function(fs) {
+      var fsURL = fs.root.toURL();
+      logger.log(fsURL);
       logger.log('<p>Opened: ' + fs.name, + '</p>');
 
-      setCwd('/'); // Display current path as root.
-      refreshFolder();
+      if (query.path) {
+          path = query.path;
+          logger.log('<p>Loaded path ' + path +' from URL</p>')
+      } else if(typeof path === 'undefined') {
+          path = '/';
+      }
+
+      setCwd(path); // Display current path as root.
+      refreshFolder(path);
       openFsButton.innerHTML = '<div></div>';
       openFsButton.classList.add('fakebutton');
       importButton.disabled = false;
       createButton.disabled = false;
       showUsage();
+
+      // Check argument for a directory
+      if (query.directory) {
+          logger.log("Loading directory: " + query.directory);
+          cd(fsURL + query.directory);
+      }
     }, function(e) {
       if (e.name == 'SECURITY_ERR') {
         errors.textContent = 'SECURITY_ERR: Are you running in incognito mode?';
@@ -332,6 +368,107 @@ function copy(el, i) {
     entries[i] = entry;
   });
   toggleContentEditable(el);
+}
+
+function zipTempRm(entry, callback) {
+    // Remove source file
+    filer.rm(entry, function(){
+        // logger.log('<p>[ZIP] Temporary file/folder removed: ' + entry.fullPath + '</p>');
+        // Next entry
+        if(typeof callback === 'function') callback();
+    });
+}
+
+function zipPath(root, entry){
+    if(root) {
+        return entry.fullPath.replace(root.fullPath, '');
+    } else {
+        return entry.fullPath;
+    }
+};
+
+function zipSave(zip, entry) {
+    var content = zip.generate({type: "blob"});
+    var ext = Util.getFileExtension(entry.name);
+    var name = entry.name;
+    if (ext) {
+        name = entry.name.replace(ext, '.zip');
+    }
+    logger.log('<p>[ZIP] Downloading file: ' + name + '</p>');
+    saveAs(content, name);
+}
+
+function zipEntry(zip, entry, callback, root) {
+    // Callback if we are at root (and root is defined)
+    if (typeof root !== 'undefined' && typeof entry !== 'undefined') {
+        if (root.fullPath === entry.fullPath) {
+            callback(zip, entry);
+            return;
+        }
+    }
+
+    if (entry.isFile) {
+        // Add entry to the zip file
+        filer.open(entry, function(fs_file) {
+            Util.fileToArrayBuffer(fs_file, function(arrayBuffer) {
+                zip.file(entry.name, arrayBuffer, {
+                    date: entry.lastModifiedDate,
+                    createFolders: false
+                });
+                logger.log('<p>[ZIP] File added: ' + zipPath(root, entry) + '</p>');
+
+                // Remove source file
+                zipTempRm(entry, callback);
+            });
+        }, onError);
+    } else {
+        // Store root variable
+        if (typeof root === 'undefined') root = entry;
+
+        // Create an folder in zip if i
+        var subzip = zip.folder(entry.name);
+
+        // List current directory and process each entry
+        filer.ls(entry, function(entries){
+            if(entries.length > 0) {
+                async.eachSeries(entries, function(subentry, next){
+                    // Execute for each subdirectory item listing synchronous
+                    zipEntry(subzip, subentry, next, root);
+                }, function(){
+                    // Execute for entry again (each execute removes an folder or file from tmp dir)
+                    zipEntry(zip, entry, callback, root);
+                });
+            } else {
+                // Remove source folder and call callback
+                zipTempRm(entry, callback);
+            }
+        }, onError);
+    }
+}
+
+function compress(index) {
+    var entry = entries[index];
+    logger.log('<p>[ZIP] Creating file for ' + entry.fullPath + '</p>');
+
+    // Store current dir
+    cur = filer.cwd;
+
+    // Create a tmp folder to work on that
+    filer.mkdir('.ziptmp', false, function(dir){
+        // Copy entry dir to tmp folder
+        filer.cp(entry, dir, null, function(tmp_entry){
+            var zip = new JSZip();
+            logger.log('<p>[ZIP] Temporary path is ' + tmp_entry.fullPath + '</p>');
+            zipEntry(zip, tmp_entry, function(){
+                zipSave(zip, entry); // Save zip
+                filer.rm(dir, function(){
+                    logger.log('<p>[ZIP] Temporary folder ' + dir.fullPath + ' removed</p>');
+                }); // Remove temp folder
+                filer.cd(cur); // Back to the backed dir
+            });
+        }, onError) ;
+    }, onError);
+    return false; // prevendDefault
 }
 
 function readFile(i) {
