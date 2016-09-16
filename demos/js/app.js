@@ -144,8 +144,8 @@ function renderEntries(resultEntries) {
   fileList.innerHTML = ''; // Clear out existing entries and reset HTML.
 
   var li = document.createElement('li');
-  li.innerHTML = '<a href="javascript:" onclick="cd(-1)" class="parentDir">' + 
-      '<img src="images/icons/folder.png" class="folder" onclick="cd(-1)">' + 
+  li.innerHTML = '<a href="javascript:" onclick="cd(-1)" class="parentDir">' +
+      '<img src="images/icons/folder.png" class="folder" onclick="cd(-1)">' +
       ' [ parent directory ]</a>';
   fileList.appendChild(li);
 
@@ -317,7 +317,7 @@ function removeEntry(link, i) {
   filer.rm(entry, function() {
     var li = link.parentNode;
     li.classList.add('fadeout');
-    li.addEventListener('webkitTransitionEnd', function(e) {
+    li.addEventListener('transitionend', function(e) {
       this.parentNode.removeChild(this);
       filer.ls('.', renderEntries, onError); // Just re-read this dir.
     }, false);

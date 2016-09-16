@@ -1,29 +1,29 @@
-/** 
+/**
  * Copyright 2013 - Eric Bidelman
- * 
+ *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- * 
+ *
  *      http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
  * See the License for the specific language governing permissions and
  * limitations under the License.
- 
+
  * @fileoverview
  * Convenient wrapper library for the HTML5 Filesystem API, implementing
  * familiar UNIX commands (cp, mv, ls) for its API.
- * 
+ *
  * @author Eric Bidelman (ebidel@gmail.com)
  * @version: 0.4.3
  */
 
 'use strict';
 
-var self = this; // window or worker context.
+//let self = this; // window or worker context.
 
 self.URL = self.URL || self.webkitURL;
 self.requestFileSystem = self.requestFileSystem || self.webkitRequestFileSystem;
@@ -87,7 +87,7 @@ var Util = {
   strToObjectURL: function(binStr, opt_contentType) {
 
     var ui8a = new Uint8Array(binStr.length);
-    for (var i = 0; i < ui8a.length; ++i) { 
+    for (var i = 0; i < ui8a.length; ++i) {
       ui8a[i] = binStr.charCodeAt(i);
     }
 
@@ -337,8 +337,6 @@ var Filer = new function() {
    */
   var copyOrMove_ = function(src, dest, opt_newName, opt_successCallback,
                              opt_errorHandler, opt_deleteOrig) {
-    var self = this;
-
     if (!fs_) {
       throw new Error(FS_INIT_ERROR_MSG);
     }
@@ -451,7 +449,7 @@ var Filer = new function() {
     };
 
     if (this.type == self.PERSISTENT && !!navigator.persistentStorage) {
-      navigator.persistentStorage.requestQuota(size, function(grantedBytes) {  
+      navigator.persistentStorage.requestQuota(size, function(grantedBytes) {
         self.requestFileSystem(
             this.type, grantedBytes, init.bind(this), opt_errorHandler);
       }.bind(this), opt_errorHandler);
@@ -808,7 +806,7 @@ var Filer = new function() {
                    opt_errorHandler);
     }
   };
-  
+
   /**
    * Displays disk space usage.
    *
@@ -820,7 +818,7 @@ var Filer = new function() {
     var queryCallback = function(byteUsed, byteCap) {
       successCallback(byteUsed, byteCap - byteUsed, byteCap);
     }
-    
+
     if (!(navigator.temporaryStorage.queryUsageAndQuota && navigator.persistentStorage.queryUsageAndQuota)) {
       throw new Error(NOT_IMPLEMENTED_MSG);
     }
@@ -831,7 +829,7 @@ var Filer = new function() {
       navigator.persistentStorage.queryUsageAndQuota(queryCallback, opt_errorHandler);
     }
   };
-                                   
+
   return Filer;
 };
 

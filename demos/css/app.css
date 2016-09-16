@@ -30,7 +30,7 @@ body ::-webkit-scrollbar-corner {
 }
 
 html, body {
-  font: 15px normal 'Open Sans', Trebuchet, Arial, sans-serif;
+  font: 15px 'Open Sans', Trebuchet, Arial, sans-serif;
   color: #444;
   margin: 0;
   height: 100%;
@@ -44,18 +44,9 @@ body {
   background: -o-radial-gradient(center center, #fff, #eee) no-repeat;
   color: #222;
   overflow-x: hidden;
-  -webkit-transition: -webkit-transform 300ms ease-in-out;
-  -webkit-transform-origin: 50% 100%;
+  transition: transform 300ms ease-in-out;
+  transform-origin: 50% 100%;
   -webkit-font-smoothing: antialiased;
-  -moz-transition: -moz-transform 300ms ease-in-out;
-  -moz-transform-origin: 50% 100%;
-  -moz-font-smoothing: antialiased;
-  -ms-transition: -moz-transform 300ms ease-in-out;
-  -ms-transform-origin: 50% 100%;
-  -ms-font-smoothing: antialiased;
-  -o-transition: -moz-transform 300ms ease-in-out;
-  -o-transform-origin: 50% 100%;
-  -o-font-smoothing: antialiased;
 }
 label {
   cursor: pointer;
@@ -85,10 +76,7 @@ li {
   padding-bottom: 2px;
 }
 .dropping {
-  -webkit-transform: scale(0.95);
-  -moz-transform: scale(0.95);
-  -ms-transform: scale(0.95);
-  -o-transform: scale(0.95);
+  transform: scale(0.95);
   background-image: -webkit-gradient(
     linear, left bottom, left top,
     color-stop(0.13, rgb(209,144,23)),
@@ -141,7 +129,7 @@ input[type="file"].button:before {
   outline: none;
   white-space: nowrap;
   vertical-align: middle;
-  -webkit-user-select:none;
+  -webkit-user-select: none;
   user-select: none;
   cursor: pointer;
   text-shadow: 1px 1px #fff;
@@ -220,8 +208,7 @@ body #container {
 
 header, footer {
   padding: 2px 0;
-  display: -webkit-flex;
-  display: -moz-box;
+  display: flex;
   border-radius: 5px;
   box-shadow: 0 5px 5px #ccc;
   background: white;
@@ -235,15 +222,8 @@ header, footer {
   -ms-user-select: none;
   -o-user-select:none;
   user-select: none;
-  -webkit-transform: translateY(0) translateZ(0);
-  -webkit-transition: -webkit-transform 1s ease-in-out;
-  /*-webkit-transition-delay: 0.5s;*/
-  -moz-transform: translateY(0) translateZ(0);
-  -moz-transition: -moz-transform 1s ease-in-out;
-  -ms-transform: translateY(0) translateZ(0);
-  -ms-transition: -ms-transform 1s ease-in-out;
-  -o-transform: translateY(0) translateZ(0);
-  -o-transition: -o-transform 1s ease-in-out;
+  transform: translateY(0) translateZ(0);
+  transition: transform 1s ease-in-out;
 }
 footer {
   height: 38px;
@@ -251,28 +231,16 @@ footer {
   clear: both;
 }
 .offscreen header {
-  -webkit-transform: translateY(-500px);
-  -moz-transform: translateY(-500px);
-  -ms-transform: translateY(-500px);
-  -o-transform: translateY(-500px);
+  transform: translateY(-500px);
 }
 .offscreen footer {
-  -webkit-transform: translateY(500px);
-  -moz-transform: translateY(500px);
-  -ms-transform: translateY(500px);
-  -o-transform: translateY(500px);
+  transform: translateY(500px);
 }
 header {
-  -webkit-align-items: center;
-  -moz-align-items: center;
-  -ms-align-items: center;
-  -o-align-items: center;
+  align-items: center;
 }
 header > div {
-  -webkit-flex: 1 0 auto;
-  -moz-flex: 1 0 auto;
-  -ms-flex: 1 0 auto;
-  -o-flex: 1 0 auto;
+  flex: 1 0 auto;
   text-align: right;
 }
 header > div > span {
@@ -299,7 +267,7 @@ header h1 {
   text-shadow: 0px -1px black;
   margin: 0 1em 0 0;
   color: white;
-  -webkit-flex: 1 0 auto;
+  flex: 1 0 auto;
 }
 header h1 a {
   color: inherit;
@@ -322,13 +290,10 @@ header h1 a {
   box-sizing: border-box;
 }
 #files li {
-  -webkit-transition: all 0.2s ease-out;
+  transition: all 0.2s ease-out;
   -webkit-column-break-inside: avoid;
-  -moz-transition: all 0.2s ease-out;
   -moz-column-break-inside: avoid;
-  -ms-transition: all 0.2s ease-out;
   -ms-column-break-inside: avoid;
-  -o-transition: all 0.2s ease-out;
   -o-column-break-inside: avoid;
   white-space: nowrap;
   padding: 10px;
@@ -369,7 +334,7 @@ img.download {
   height: 25px;
   width: 25px;
   opacity: 0;
-  /*-webkit-transition: opacity 0.4s ease-out;*/
+  /*transition: opacity 0.4s ease-out;*/
 }
 #files li a[download] img.icon {
   height: 21px;
@@ -408,18 +373,10 @@ img.download {
 }
 #file-info.show {
   z-index: 1000;
-  display: -webkit-box;
-  -webkit-box-orient: vertical;
-  -webkit-box-pack: center;
-  display: -moz-box;
-  -moz-box-orient: vertical;
-  -moz-box-pack: center;
-  display: -ms-box;
-  -ms-box-orient: vertical;
-  -ms-box-pack: center;
-  display: -o-box;
-  -o-box-orient: vertical;
-  -o-box-pack: center;
+  display: flex;
+  align-items: center;
+  flex-direction: column;
+  justify-content: center;
 }
 #file-info > div,
 #file-info p {
@@ -463,7 +420,7 @@ header .active {
   text-decoration: underline;
 }
 #log {
-  font: 90% normal 'Courier New';
+  font: 90% 'Courier New';
   position: absolute;
   background: -webkit-linear-gradient(#fff 40%, #eee);
   background: -moz-linear-gradient(#fff 40%, #eee);
@@ -478,21 +435,12 @@ header .active {
   padding: 40px 10px 10px 10px;
   box-sizing: border-box;
   box-shadow: -3px 0 10px #ddd;
-  -webkit-transition: -webkit-transform 0.2s ease-out;
-  -webkit-transform: translate(500px) translateZ(0);
-  -moz-transition: -moz-transform 0.2s ease-out;
-  -moz-transform: translate(500px) translateZ(0);
-  -ms-transition: -ms-transform 0.2s ease-out;
-  -ms-transform: translate(500px) translateZ(0);
-  -o-transition: -webkit-transform 0.2s ease-out;
-  -o-transform: translate(500px) translateZ(0);
+  transition: transform 0.2s ease-out;
+  transform: translateX(100%) translateZ(0);
   z-index: 100;
 }
 #log.active {
-  -webkit-transform: translateX(0) translateZ(0);
-  -moz-transform: translateX(0) translateZ(0);
-  -ms-transform: translateX(0) translateZ(0);
-  -o-transform: translateX(0) translateZ(0);
+  transform: none;
 }
 #log button {
   position: absolute;
@@ -544,10 +492,7 @@ header .active {
 }
 #ticker {
   opacity: 0;
-  -webkit-transition: opacity 1s ease-in-out;
-  -moz-transition: opacity 1s ease-in-out;
-  -ms-transition: opacity 1s ease-in-out;
-  -o-transition: opacity 1s ease-in-out;
+  transition: opacity 1s ease-in-out;
 }
 #ticker.fadedIn {
   opacity: 1;
@@ -559,8 +504,8 @@ header .active {
 }
 
 #usage {
-    margin-bottom: 10px;
+  margin-bottom: 10px;
 }
 #usage span {
-    margin-right: 20px;
+  margin-right: 20px;
 }

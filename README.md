@@ -30,8 +30,7 @@ Getting started
 =======
 
 I highly recommended that you familiarize yourself with the HTML5 Filesystem API.
-I've written a book on the topic, ["Using the HTML5 Filesystem API"](http://shop.oreilly.com/product/0636920021360.do),
-and there are two great articles on HTML5 Rocks that walk you through all of its
+I've written a book on the topic, ["Using the HTML5 Filesystem API"](http://shop.oreilly.com/product/0636920021360.do), and there are two great articles on HTML5 Rocks that walk you through all of its
 different methods and capabilities:
 
 1. [Exploring the FileSystem APIs](http://www.html5rocks.com/tutorials/file/filesystem/)
@@ -39,6 +38,14 @@ different methods and capabilities:
 
 Usage
 -----
+
+Install the polyfill:
+
+    npm install filer.js --save
+
+Drop it on your page:
+
+    <script src="node_modules/filer/dist/filer.min.js" async></script>
 
 The underlying Filesystem API is asynchronous, therefore, the library calls are
 mostly asynchronous. This means you'll be passing callbacks all over the place.
@@ -448,5 +455,24 @@ document.querySelector('input[type="file"]').onchange = function(e) {
   });
 };
 ```
+
+## Contributing
+
+### Building
+
+Install the dependencies and compile the library by running `gulp`:
+
+    npm install
+    gulp
+
+This will output a built file to `dist/filer.min.js`.
+
+### Releasing
+
+To cut a new release, run:
+
+    npm version patch
+    gulp
+    npm publish
 
 [![Analytics](https://ga-beacon.appspot.com/UA-46812528-1/ebidel/filer.js/README)](https://github.com/igrigorik/ga-beacon)

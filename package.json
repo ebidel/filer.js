@@ -1,5 +1,29 @@
 {
   "name": "filer.js",
   "version": "0.4.3",
-  "main": "./src/filer.min.js"
+  "description": "A wrapper library for the HTML5 Filesystem API what reuses UNIX commands (cp, mv, ls) for its API.",
+  "main": "src/filer.js",
+  "directories": {
+    "test": "tests"
+  },
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/ebidel/filer.js.git"
+  },
+  "author": "Eric Bidelman <ebidel@>",
+  "license": "Apache-2.0",
+  "bugs": {
+    "url": "https://github.com/ebidel/filer.js/issues"
+  },
+  "homepage": "https://github.com/ebidel/filer.js#readme",
+  "devDependencies": {
+    "google-closure-compiler-js": "*",
+    "gulp": "^3.9.1",
+    "gulp-inject-version": "^1.0.1",
+    "gulp-license": "^1.1.0",
+    "gulp-load-plugins": "^1.3.0"
+  }
 }
