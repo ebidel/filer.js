@@ -472,6 +472,9 @@ This will output a built file to `dist/filer.min.js`.
 To cut a new release, run:
 
     npm version patch
+
+Also update components.json with the new version. Then run:
+
     gulp
     npm publish
 
