@@ -1,6 +1,6 @@
 {
   "name": "filer.js",
-  "version": "0.4.4",
+  "version": "0.4.5",
   "description": "A wrapper library for the HTML5 Filesystem API what reuses UNIX commands (cp, mv, ls) for its API.",
   "main": "src/filer.js",
   "directories": {
