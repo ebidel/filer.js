@@ -294,36 +294,52 @@ var Filer = new function() {
    *     to this method.
    * @param {...string} var_args 1-2 paths to lookup and return entries for.
    *     These can be paths or filesystem: URLs.
+   *
+   * @param {errorCallback} optional last parameter which can be executed if an error occurs
    */
   var getEntry_ = function(callback, var_args) {
     var srcStr = arguments[1];
-    var destStr = arguments[2];
+    var errorCallback;
+    var destStr;
 
-    var onError = function(e) {
-      if (e.code == FileError.NOT_FOUND_ERR) {
-        if (destStr) {
-          throw new Error('"' + srcStr + '" or "' + destStr +
-                          '" does not exist.');
+    if (typeof arguments[2] == "string") {
+      destStr = arguments[2];
+    } else
+    if (typeof arguments[2] == "function") {
+      errorCallback = arguments[2];
+    }
+
+    if (typeof arguments[3] == "function") {
+      errorCallback = arguments[2];
+    }
+
+    if (!errorCallback) {
+      errorCallback = function(e) {
+        if (e.code == FileError.NOT_FOUND_ERR) {
+          if (destStr) {
+            throw new Error('"' + srcStr + '" or "' + destStr +
+              '" does not exist.');
+          } else {
+            throw new Error('"' + srcStr + '" does not exist.');
+          }
         } else {
-          throw new Error('"' + srcStr + '" does not exist.');
+          throw new Error('Problem getting Entry for one or more paths.');
         }
-      } else {
-        throw new Error('Problem getting Entry for one or more paths.');
       }
-    };
+    }
 
     // Build a filesystem: URL manually if we need to.
     var src = pathToFsURL_(srcStr);
 
-    if (arguments.length == 3) {
+    if ((typeof srcStr == "string") && (typeof destStr == "string")) {
       var dest = pathToFsURL_(destStr);
       self.resolveLocalFileSystemURL(src, function(srcEntry) {
         self.resolveLocalFileSystemURL(dest, function(destEntry) {
           callback(srcEntry, destEntry);
-        }, onError);
-      }, onError);
+        }, errorCallback);
+      }, errorCallback);
     } else {
-      self.resolveLocalFileSystemURL(src, callback, onError);
+      self.resolveLocalFileSystemURL(src, callback, errorCallback);
     }
   };
 
@@ -595,7 +611,7 @@ var Filer = new function() {
     } else {
       getEntry_(function(fileEntry) {
         fileEntry.file(successCallback, opt_errorHandler);
-      }, pathToFsURL_(entryOrPath));
+      }, pathToFsURL_(entryOrPath), opt_errorHandler);
     }
   };
 
