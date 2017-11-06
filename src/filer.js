@@ -766,12 +766,15 @@ var Filer = new function() {
 
         fileWriter.onerror = opt_errorHandler;
 
-        if (dataObj.append) {
+        if (dataObj.append || dataObj.seek) {
           fileWriter.onwriteend = function(e) {
             if (opt_successCallback) opt_successCallback(fileEntry, this);
           };
 
-          fileWriter.seek(fileWriter.length); // Start write position at EOF.
+          // Start write position at EOF or supplied seek-position
+          var seekPosition = (dataObj.append && fileWriter.length) || dataObj.seek;
+
+          fileWriter.seek(seekPosition);
         } else {
           var truncated = false;
           fileWriter.onwriteend = function(e) {
