@@ -782,6 +782,20 @@ test('write()', 11, function() {
     }, onError);
   }, onError);
 
+  stop();
+  var fileName6 = fileName + '6';
+  filer.create(fileName6, false, function(entry) {
+    filer.write(entry, {data: data}, function(fileEntry, fileWriter) {
+      filer.write(fileEntry, {data: data, seek: 4}, function(fileEntry2, fileWriter2) {
+        filer.open(fileEntry, function(file) {
+          equal(file.size, data.length + 4, 'size of data written with seek is correct');
+          filer.rm(fileEntry, function() {
+            start();
+          }, onError);
+        }, onError);
+      }, onError);
+    }, onError);
+  }, onError);
 });
 
 
