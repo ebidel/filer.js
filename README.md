@@ -364,13 +364,14 @@ write()
 *Writes content to a file.*
 
 `write()` takes a `string` (path or filesystem URL) or `FileEntry` as it's first argument.
-This is the file to write data to. If the does not exist, it is created. Otherwise,
-the file's contents are overwritten if it already exists.
+This is the file to write data to. If the does not exist, it is created. The file's contents are overwritten
+if it already exists, unless the seek-property is defined in the second argument.
 
-The second argument is an object with three properties:
+The second argument is an object with four properties:
 - `data`: the content to write into the file.
 - `type`: optional mimetype of the content.
 - `append`: optional true if data should be appended to the file.
+- `seek`: optional integer indicating the position to start writing.
 
 The success callback for this method is passed the `FileEntry` for the file that
 was written to and the `FileWriter` object used to do the writing.
