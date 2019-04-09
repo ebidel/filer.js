@@ -223,7 +223,7 @@ var MyFileError = function (obj) {
     this.name = obj.name;
 };
 
-window.Filer = new function () {
+var Filer = new function () {
 
     var FS_INIT_ERROR_MSG = 'Filesystem has not been initialized.';
     var NOT_IMPLEMENTED_MSG = 'Not implemented.';
@@ -347,7 +347,7 @@ window.Filer = new function () {
                 }
             }, src, dest);
         }
-    }
+    };
 
     function Filer(fs) {
         fs_ = fs || null;
@@ -370,7 +370,7 @@ window.Filer = new function () {
         get cwd() {
             return cwd_;
         }
-    }
+    };
 
     /**
      * Constructs and returns a filesystem: URL given a path.
@@ -382,7 +382,7 @@ window.Filer = new function () {
      */
     Filer.prototype.pathToFilesystemURL = function (path) {
         return pathToFsURL_(path);
-    }
+    };
 
     /**
      * Initializes (opens) the file system.
