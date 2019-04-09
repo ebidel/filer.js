@@ -275,7 +275,7 @@ window.Filer = new function () {
         var destStr = arguments[2];
 
         var onError = function (e) {
-            if (e.name == 'NOT_FOUND_ERR') {
+            if (e.name == 'NotFoundError') {
                 if (destStr) {
                     throw new Error('"' + srcStr + '" or "' + destStr +
                         '" does not exist.');
@@ -536,7 +536,7 @@ window.Filer = new function () {
                     }
                 },
                 function (e) {
-                    if (e.name === 'INVALID_MODIFICATION_ERR') {
+                    if (e.name === 'InvalidModificationError') {
                         e.message = "'" + path + "' already exists";
                         if (opt_errorHandler) {
                             opt_errorHandler(e);
@@ -594,7 +594,7 @@ window.Filer = new function () {
 
         cwd_.getFile(path, {create: true, exclusive: exclusive}, successCallback,
             function (e) {
-                if (e.name == 'INVALID_MODIFICATION_ERR') {
+                if (e.name == 'InvalidModificationError') {
                     e.message = "'" + path + "' already exists";
                 }
                 if (opt_errorHandler) {

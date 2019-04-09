@@ -186,7 +186,7 @@ function openFS() {
             createButton.disabled = false;
             showUsage();
         }, function (e) {
-            if (e.name == 'SECURITY_ERR') {
+            if (e.name == 'SecurityError') {
                 errors.textContent = 'SECURITY_ERR: Are you running in incognito mode?';
                 openFsButton.innerHTML = '<div></div>';
                 openFsButton.classList.add('fakebutton');
