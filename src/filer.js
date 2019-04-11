@@ -36,11 +36,6 @@ navigator.persistentStorage = navigator.persistentStorage ||
 self.BlobBuilder = self.BlobBuilder || self.MozBlobBuilder ||
                    self.WebKitBlobBuilder;
 
-// Prevent errors in browsers that don't support FileError.
-if (self.FileError === undefined) {
-  var FileError = function() {};
-  FileError.prototype.prototype = Error.prototype;
-}
 
 var Util = {
 
@@ -226,26 +221,8 @@ var Util = {
 
 
 var MyFileError = function(obj) {
-  this.prototype = FileError.prototype;
-  this.code = obj.code;
   this.name = obj.name;
 };
-//MyFileError.prototype.__proto__ = FileError.prototype;
-
-// Extend FileError with custom errors and a convenience method to get error
-// code mnemonic.
-FileError.BROWSER_NOT_SUPPORTED = 1000;
-
-// TODO: remove when FileError.name is implemented (crbug.com/86014).
-FileError.prototype.__defineGetter__('name', function() {
-  var keys = Object.keys(FileError);
-  for (var i = 0, key; key = keys[i]; ++i) {
-    if (FileError[key] == this.code) {
-      return key;
-    }
-  }
-  return 'Unknown Error';
-});
 
 
 var Filer = new function() {
@@ -300,7 +277,7 @@ var Filer = new function() {
     var destStr = arguments[2];
 
     var onError = function(e) {
-      if (e.code == FileError.NOT_FOUND_ERR) {
+      if (e.name == 'NotFoundError') {
         if (destStr) {
           throw new Error('"' + srcStr + '" or "' + destStr +
                           '" does not exist.');
@@ -426,7 +403,6 @@ var Filer = new function() {
                                   opt_errorHandler) {
     if (!self.requestFileSystem) {
       throw new MyFileError({
-        code: FileError.BROWSER_NOT_SUPPORTED,
         name: 'BROWSER_NOT_SUPPORTED'
       });
     }
@@ -562,7 +538,7 @@ var Filer = new function() {
           }
         },
         function(e) {
-          if (e.code == FileError.INVALID_MODIFICATION_ERR) {
+          if (e.name === 'InvalidModificationError') {
             e.message = "'" + path + "' already exists";
             if (opt_errorHandler) {
               opt_errorHandler(e);
@@ -620,7 +596,7 @@ var Filer = new function() {
 
     cwd_.getFile(path, {create: true,  exclusive: exclusive}, successCallback,
       function(e) {
-        if (e.code == FileError.INVALID_MODIFICATION_ERR) {
+        if (e.name == 'InvalidModificationError') {
           e.message = "'" + path + "' already exists";
         }
         if (opt_errorHandler) {
@@ -834,8 +810,8 @@ var Filer = new function() {
 };
 
 // For CommonJS
-if (typeof exports !== 'undefined') {
-  if (typeof module !== 'undefined' && module.exports) {
+if (typeof exports !== undefined) {
+  if (typeof module !== undefined && module.exports) {
     module.exports = Filer;
   }
   exports.Filer = Filer;
